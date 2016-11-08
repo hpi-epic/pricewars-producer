@@ -1,137 +1,104 @@
-var appRouter = function(app) {
+var Product = require("../models/Product.js");
 
-    var availableProducts = [
-        {
-            product_id: 1,
-            name: "CD_Rock",
-            genre: 1,
-            price: 15
-        },
-        {
-            product_id: 2,
-            name: "CD_Classic",
-            genre: 2,
-            price: 15
-        },
-        {
-            product_id: 3,
-            name: "CD_Pop",
-            genre: 3,
-            price: 15
-        },
-        {
-            product_id: 4,
-            name: "CD_Jazz",
-            genre: 4,
-            price: 15
-        },
-        {
-            product_id: 5,
-            name: "CD_Children",
-            genre: 5,
-            price: 15
-        },
-        {
-            product_id: 6,
-            name: "CD_Electro",
-            genre: 6,
-            price: 15
-        },
-        {
-            product_id: 7,
-            name: "CD_Dance",
-            genre: 7,
-            price: 15
-        },
-        {
-            product_id: 8,
-            name: "CD_Country",
-            genre: 8,
-            price: 15
-        },
-        {
-            product_id: 9,
-            name: "CD_Folk",
-            genre: 9,
-            price: 15
-        },
-        {
-            product_id: 10,
-            name: "CD_Christmas",
-            genre: 10,
-            price: 15
-        }
-    ];
+var appRouter = function(app) {
 
     var merchantProdcuts = [];
 
     app
         .get("/buyers", function(req, res) {
-            return res.send(merchantProdcuts);
+            console.log("GET Buyers called");
+            return res.status(200).send(merchantProdcuts);
         })
         .post("/buyers", function(req, res) {
             if(!req.body.merchantID) {
-                return res.status(400).send({"code": "400", "message": "missing the merchantID parameter", "field" : "constraints violated for field 'merchantID'"});
+                console.log("POST Buyers called without merchantID");
+
+                return res.status(400).send({
+                    "code": 400,
+                    "message": "missing the merchantID parameter",
+                    "fields" : "constraints violated for field 'merchantID'"
+                });
             } else {
+                console.log("POST Buyers called with merchant " + req.body.merchantID);
+
                 // check if merchant already exists
                 existingMerchants = merchantProdcuts.filter(function(merchant){
                     if (merchant.merchantID === req.body.merchantID)
                         return merchant
                 });
                 if (existingMerchants.length != 0)
-                    return res.status(409).send({"status": "409", "message": "this merchantID is already registered with the producer", "field" : "merchantID-body-data"});
+                    return res.status(409).send({
+                        "code": 409,
+                        "message": "this merchantID is already registered with the producer",
+                        "fields" : "merchantID-body-data"
+                    });
 
-                // randomly pick 5 availableProducts for this new merchant
-                products = [];
-                while (products.length < 5) {
-                    random = getRandomInt(0, availableProducts.length - 1);
-                    if (products.indexOf(random) > -1) continue;
-                    products.push(random);
-                }
-                console.log(products);
                 // add this merchant and his product selection to the storage
                 merchantProdcuts.push({
                     merchantID: req.body.merchantID,
-                    products
+                    products: Product.GetRandomProducts(5)
                 });
-                return res.status(200).send({"status": "200", "message": "successfully registered"});
+
+                res.status(200).send({
+                    "code": 200,
+                    "message": "successfully registered"
+                });
             }
         })
         .delete("/buyers", function(req, res) {
+            console.log("DELETE Buyers called");
             if(!req.body.merchantID) {
-                return res.status(400).send({"code": "400", "message": "missing the merchantID parameter", "field" : "constraints violated for field 'merchantID'"});
+                return res.status(400).send({
+                    "code": 400,
+                    "message": "missing the merchantID parameter",
+                    "field" : "constraints violated for field 'merchantID'"
+                });
             } else {
                 // check if merchant exists
                 for (var i = 0; i < merchantProdcuts.length; i++) {
                     if (merchantProdcuts[i].merchantID === req.body.merchantID) {
                         merchantProdcuts.splice(i, 1);
-                        return res.status(200).send({"status": "200", "message": "merchant was successfully deleted"});
+                        return res.status(200).send({
+                            "status": 200,
+                            "message": "merchant was successfully deleted"
+                        });
                     }
                 }
-                return res.status(409).send({"status": "409", "message": "this merchantID is not registered with the producer", "field" : "merchantID-body-data"});
+                return res.status(409).send({
+                    "code": 409,
+                    "message": "this merchantID is not registered with the producer",
+                    "field" : "merchantID-body-data"
+                });
             }
         })
         .get("/products/buy", function(req, res) {
             if(!req.query.merchantID) {
-                return res.status(400).send({"code": "400", "message": "missing the merchantID form-parameter", "field" : "constraints violated for field 'merchantID'"});
+                console.log("GET Buy Product called without merchantID");
+                return res.status(400).send({
+                    "code": 400,
+                    "message": "missing the merchantID form-parameter",
+                    "field" : "constraints violated for field 'merchantID'"
+                });
             } else {
+                console.log("GET Buy Product called with merchantID " + req.query.merchantID);
                 merchant = merchantProdcuts.filter(function(merchant){
                     if (merchant.merchantID === req.query.merchantID)
                         return merchant
                 });
                 if (merchant.length == 1) {
                     merchant = merchant[0];
-                    // take a random product index from the product-indices the merchant receives
-                    indexOfProduct = merchant.products[ getRandomInt(0, merchant.products.length - 1) ];
-                    res.send(availableProducts[indexOfProduct]);
+                    res.send(merchant.products[ getRandomInt(0, merchant.products.length - 1) ]);
                 } else {
-                    res.status(401).send({"code": "401", "message": "merchant is not known to the producer, please register first", "field" : "please provide a registered merchantID as 'merchantID'-form-parameter"});
+                    res.status(401).send({
+                        "code": 401,
+                        "message": "merchant is not known to the producer, please register first",
+                        "field" : "please provide a registered merchantID as 'merchantID'-form-parameter"
+                    });
                 }
             }
         });
 }
 
-// returns a random in (range including min and max)
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
