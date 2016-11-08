@@ -71,9 +71,16 @@ var appRouter = function(app) {
         })
         .post("/buyers", function(req, res) {
             if(!req.body.merchantID) {
-                return res.send({"status": "error", "message": "missing the merchantID query-parameter"});
+                return res.send({"code": "400", "message": "missing the merchantID form-parameter", "field" : "constraints violated for field 'merchantID'"});
             } else {
-                // TODO check if merchant already exists
+                // check if merchant already exists
+                existingMerchants = merchantProdcuts.filter(function(merchant){
+                    if (merchant.merchantID === req.body.merchantID)
+                        return merchant
+                });
+                if (existingMerchants.length != 0)
+                    return res.send({"status": "409", "message": "this merchantID is already registered with the producer", "field" : "merchantID-form-data"});
+
                 // randomly pick 5 availableProducts for this new merchant
                 products = [];
                 while (products.length < 5) {
@@ -92,11 +99,11 @@ var appRouter = function(app) {
         })
         .get("/products/buy", function(req, res) {
             if(!req.query.merchantID) {
-                return res.send({"status": "error", "message": "missing the merchantID query-parameter"});
+                return res.send({"code": "400", "message": "missing the merchantID form-parameter", "field" : "constraints violated for field 'merchantID'"});
             } else {
-                 merchant = merchantProdcuts.filter(function(merchant){
+                merchant = merchantProdcuts.filter(function(merchant){
                     if (merchant.merchantID === req.query.merchantID)
-                    return merchant
+                        return merchant
                 });
                 if (merchant.length == 1) {
                     merchant = merchant[0];
@@ -104,7 +111,7 @@ var appRouter = function(app) {
                     indexOfProduct = merchant.products[ getRandomInt(0, merchant.products.length - 1) ];
                     res.send(availableProducts[indexOfProduct]);
                 } else {
-                    res.send({"status": "error", "message": "merchant not known to the producer, please register first"});
+                    res.send({"code": "401", "message": "merchant is not known to the producer, please register first", "field" : "please provide a registered merchantID as 'merchantID'-form-parameter"});
                 }
             }
         });
