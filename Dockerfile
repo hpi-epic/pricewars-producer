@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:6
 ADD . /producer
 WORKDIR /producer
 RUN npm install
