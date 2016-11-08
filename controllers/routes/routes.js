@@ -71,7 +71,7 @@ var appRouter = function(app) {
         })
         .post("/buyers", function(req, res) {
             if(!req.body.merchantID) {
-                return res.status(400).send({"code": "400", "message": "missing the merchantID form-parameter", "field" : "constraints violated for field 'merchantID'"});
+                return res.status(400).send({"code": "400", "message": "missing the merchantID parameter", "field" : "constraints violated for field 'merchantID'"});
             } else {
                 // check if merchant already exists
                 existingMerchants = merchantProdcuts.filter(function(merchant){
@@ -79,7 +79,7 @@ var appRouter = function(app) {
                         return merchant
                 });
                 if (existingMerchants.length != 0)
-                    return res.status(409).send({"status": "409", "message": "this merchantID is already registered with the producer", "field" : "merchantID-form-data"});
+                    return res.status(409).send({"status": "409", "message": "this merchantID is already registered with the producer", "field" : "merchantID-body-data"});
 
                 // randomly pick 5 availableProducts for this new merchant
                 products = [];
@@ -95,6 +95,20 @@ var appRouter = function(app) {
                     products
                 });
                 return res.status(200).send({"status": "200", "message": "successfully registered"});
+            }
+        })
+        .delete("/buyers", function(req, res) {
+            if(!req.body.merchantID) {
+                return res.status(400).send({"code": "400", "message": "missing the merchantID parameter", "field" : "constraints violated for field 'merchantID'"});
+            } else {
+                // check if merchant exists
+                for (var i = 0; i < merchantProdcuts.length; i++) {
+                    if (merchantProdcuts[i].merchantID === req.body.merchantID) {
+                        merchantProdcuts.splice(i, 1);
+                        return res.status(200).send({"status": "200", "message": "merchant was successfully deleted"});
+                    }
+                }
+                return res.status(409).send({"status": "409", "message": "this merchantID is not registered with the producer", "field" : "merchantID-body-data"});
             }
         })
         .get("/products/buy", function(req, res) {
