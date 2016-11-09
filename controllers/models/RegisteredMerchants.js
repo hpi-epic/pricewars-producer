@@ -7,7 +7,7 @@ storage.init();
 //storage.getItem("registered")
 
 RegisteredMerchants.RegisterMerchant = function (merchant_id) {
-    var merchant = new RegisteredMerchant(merchant_id, Products.GetRandomProductIDs(5));
+    var merchant = new RegisteredMerchant(merchant_id, Products.GetStartProductIDs(4, 1));
     RegisteredMerchants.push(merchant);
     return merchant;
 };

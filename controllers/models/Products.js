@@ -61,11 +61,18 @@ var Products = [
     }
 ];
 
-Products.GetRandomProductIDs = function (numberOfDifferentProducts) {
+Products.GetStartProductIDs = function (numberOfRandomProducts, numberOfSharedProducts) {
     var randomProductIDs = [];
 
-    while (randomProductIDs.length < numberOfDifferentProducts) {
-        var randomProductIndex = getRandomInt(0, Products.length - 1);
+    // if merchants share products, just add the first x available products to the selection
+    if (numberOfSharedProducts === undefined) numberOfSharedProducts = 0;
+    for (var i = 0; i < numberOfSharedProducts; i++) {
+        randomProductIDs.push(Products[i].product_id);
+    }
+
+    // then fill up with random products
+    while (randomProductIDs.length < (numberOfRandomProducts + numberOfSharedProducts)) {
+        var randomProductIndex = getRandomInt(numberOfSharedProducts, Products.length - 1);
         var randomProduct = Products[randomProductIndex];
 
         // check whether product has been chosen already
