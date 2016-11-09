@@ -9,7 +9,7 @@ var appRouter = function(app) {
             if (req.query.merchant_id) {
                 var merchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
                 if (merchant !== undefined) {
-                    return res.status(200).send(merchant);
+                    return res.status(200).send([merchant]);
                 } else {
                     return res.status(404).send({
                        "code": 404,
@@ -25,7 +25,7 @@ var appRouter = function(app) {
             if (req.query.product_id) {
                 var product = Products.GetProductByID(req.query.product_id);
                 if (product !== undefined) {
-                    return res.status(200).send(product);
+                    return res.status(200).send([product]);
                 } else {
                     return res.status(404).send({
                         "code": 404,
@@ -67,7 +67,7 @@ var appRouter = function(app) {
                     initialProducts.push(newMerchant.GetSpecificProduct(newMerchant.products[i], 10));
                 }
 
-                res.status(200).send(initialProducts);
+                return res.status(200).send(initialProducts);
             }
         })
         .delete("/buyers", function(req, res) {
