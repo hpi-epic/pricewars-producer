@@ -6,10 +6,34 @@ var appRouter = function(app) {
     app
         .get("/buyers", function(req, res) {
             console.log("GET Buyers called");
+            if (req.query.merchant_id) {
+                var merchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
+                if (merchant !== undefined) {
+                    return res.status(200).send(merchant);
+                } else {
+                    return res.status(404).send({
+                       "code": 404,
+                        "message": "this merchant is not registered with the producer",
+                        "fields" : "unknown 'merchant_id'"
+                    });
+                }
+            }
             return res.status(200).send(RegisteredMerchants);
         })
         .get("/products", function(req, res) {
             console.log("GET Products called")
+            if (req.query.product_id) {
+                var product = Products.GetProductByID(req.query.product_id);
+                if (product !== undefined) {
+                    return res.status(200).send(product);
+                } else {
+                    return res.status(404).send({
+                        "code": 404,
+                        "message": "this product does not exist for this producer",
+                        "fields" : "unknown 'product_id'"
+                    });
+                }
+            }
             return res.status(200).send(Products);
         })
         .post("/buyers", function(req, res) {
@@ -66,7 +90,7 @@ var appRouter = function(app) {
 
                 // merchant didnt exist, couldnt delete
                 return res.status(409).send({
-                    "code": 409,
+                    "code": 404,
                     "message": "this merchant_id is not registered with the producer",
                     "field" : "merchant_id-body-data"
                 });
