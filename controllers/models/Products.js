@@ -1,60 +1,60 @@
 var Products = [
     {
-        product_id: "1",
+        product_id: 1,
         name: "CD_Rock",
         genre: "Rock",
         price: 15
     },
     {
-        product_id: "2",
+        product_id: 2,
         name: "CD_Classic",
         genre: "Classic",
         price: 15
     },
     {
-        product_id: "3",
+        product_id: 3,
         name: "CD_Pop",
         genre: "Pop",
         price: 15
     },
     {
-        product_id: "4",
+        product_id: 4,
         name: "CD_Jazz",
         genre: "JazZ",
         price: 15
     },
     {
-        product_id: "5",
+        product_id: 5,
         name: "CD_Children",
         genre: "Children",
         price: 15
     },
     {
-        product_id: "6",
+        product_id: 6,
         name: "CD_Electro",
         genre: "Electro",
         price: 15
     },
     {
-        product_id: "7",
+        product_id: 7,
         name: "CD_Dance",
         genre: "Dance",
         price: 15
     },
     {
-        product_id: "8",
+        product_id: 8,
         name: "CD_Country",
         genre: "Country",
         price: 15
     },
     {
-        product_id: "9",
+        product_id: 9,
         name: "CD_HipHop",
         genre: "Hip Hop",
         price: 15
     },
     {
-        product_id: "10",
+        product_id: 10,
         name: "CD_Christmas",
         genre: "Christmas",
         price: 15
