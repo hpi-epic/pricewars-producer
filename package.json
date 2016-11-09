@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "description": "The producer component of the Price Wars Master Project providing a REST API via which merchants can buy products",
   "main": "app.js",
-  "scripts": {},
+  "repository": "https://github.com/hpi-epic/pricewars-producer.git",
   "author": "Johanna Latt",
   "license": "MIT",
   "dependencies": {
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.15.2", 
     "express": "^4.14.0",
-    "forever": "^0.15.3"
+    "forever": "^0.15.3",
+    "node-persist": "^2.0.7"
+  },
+  "scripts": {
+    "start": "SET NODE_ENV=dev && node app.js"
   }
 }

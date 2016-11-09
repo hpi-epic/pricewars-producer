@@ -1,21 +1,35 @@
 var RegisteredMerchants = [];
 
-var Products = require("../models/Products.js");
+var Products = require('../models/Products.js');
 var storage = require('node-persist');
-storage.init();
 
-//storage.getItem("registered")
+RegisteredMerchants.LoadRegisteredMerchants = function() {
+    storage.initSync();
+
+    storage.getItem('registered_merchants').then(function(value) {
+        if (value === null || value === undefined) {
+            storage.setItem('registered_merchants', RegisteredMerchants);
+        } else {
+            RegisteredMerchants = value;
+        }
+    });
+}();
+
+RegisteredMerchants.GetRegisteredMerchants = function() {
+    return RegisteredMerchants;
+}
 
 RegisteredMerchants.RegisterMerchant = function (merchant_id) {
     var merchant = new RegisteredMerchant(merchant_id, Products.GetStartProductIDs(4, 1));
     RegisteredMerchants.push(merchant);
+    storage.setItem('registered_merchants', RegisteredMerchants);
     return merchant;
 };
 
 var RegisteredMerchant = function(merchant_id, productIDs) {
     this.merchant_id = merchant_id;
     this.products = productIDs;
-}
+};
 
 RegisteredMerchant.prototype.GetRandomProduct = function(amount) {
     var randomProductID = this.products[getRandomInt(0, this.products.length - 1)];
@@ -26,7 +40,7 @@ RegisteredMerchant.prototype.GetRandomProduct = function(amount) {
 
 RegisteredMerchant.prototype.GetSpecificProduct = function(product_id, amount) {
     for (var j = 0; j < this.products.length; j++) {
-        if (this.products[j] === product_id) {
+        if (this.products[j] == product_id) {
             var requestedProduct = Products.GetProductByID(this.products[j]);
             requestedProduct["amount"] = amount;
             return requestedProduct;
@@ -49,6 +63,7 @@ RegisteredMerchants.DeleteMerchant = function(merchant_id) {
     for (var i = 0; i < RegisteredMerchants.length; i++) {
         if (RegisteredMerchants[i].merchant_id === merchant_id) {
             RegisteredMerchants.splice(i, 1);
+            storage.setItem('registered_merchants', RegisteredMerchants);
             return true;
         }
     }

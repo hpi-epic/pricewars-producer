@@ -18,7 +18,7 @@ var appRouter = function(app) {
                     });
                 }
             }
-            return res.status(200).send(RegisteredMerchants);
+            return res.status(200).send(RegisteredMerchants.GetRegisteredMerchants());
         })
         .get("/products", function(req, res) {
             console.log("GET Products called")

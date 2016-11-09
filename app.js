@@ -7,6 +7,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 var routes = require("./controllers/routes/routes.js")(app);
 
-var server = app.listen(3000, function () {
+var server = app.listen(3050, function () {
     console.log("Listening on port %s...", server.address().port);
 });
