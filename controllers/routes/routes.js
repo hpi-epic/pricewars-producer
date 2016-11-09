@@ -1,7 +1,7 @@
-var RegisteredMerchants = require("../models/RegisteredMerchants.js");
-var Products = require("../models/Products.js");
-
 var appRouter = function(app) {
+
+    var RegisteredMerchants = require("../models/RegisteredMerchants.js");
+    var Products = require("../models/Products.js");
 
     app
         .get("/buyers", function(req, res) {

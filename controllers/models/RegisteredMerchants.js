@@ -2,13 +2,21 @@ var RegisteredMerchants = [];
 
 var Products = require('../models/Products.js');
 var storage = require('node-persist');
+var usedStorage;
 
 RegisteredMerchants.LoadRegisteredMerchants = function() {
-    storage.initSync();
 
-    storage.getItem('registered_merchants').then(function(value) {
+    if (process.env.NODE_ENV == 'test') {
+        usedStorage = storage.create({dir: 'test/storage'});
+        // no need to call init, has been done in tests
+    } else {
+        usedStorage = storage.create({dir: 'storage'});
+        usedStorage.initSync();
+    }
+
+    usedStorage.getItem('registered_merchants').then(function(value) {
         if (value === null || value === undefined) {
-            storage.setItem('registered_merchants', RegisteredMerchants);
+            usedStorage.setItem('registered_merchants', RegisteredMerchants);
         } else {
             RegisteredMerchants = value;
         }
@@ -22,7 +30,7 @@ RegisteredMerchants.GetRegisteredMerchants = function() {
 RegisteredMerchants.RegisterMerchant = function (merchant_id) {
     var merchant = new RegisteredMerchant(merchant_id, Products.GetStartProductIDs(4, 1));
     RegisteredMerchants.push(merchant);
-    storage.setItem('registered_merchants', RegisteredMerchants);
+    usedStorage.setItem('registered_merchants', RegisteredMerchants);
     return merchant;
 };
 
@@ -63,7 +71,7 @@ RegisteredMerchants.DeleteMerchant = function(merchant_id) {
     for (var i = 0; i < RegisteredMerchants.length; i++) {
         if (RegisteredMerchants[i].merchant_id === merchant_id) {
             RegisteredMerchants.splice(i, 1);
-            storage.setItem('registered_merchants', RegisteredMerchants);
+            usedStorage.setItem('registered_merchants', RegisteredMerchants);
             return true;
         }
     }
