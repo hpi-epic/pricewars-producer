@@ -1,12 +1,16 @@
-var Products = require("../models/Products.js");
 var RegisteredMerchants = require("../models/RegisteredMerchants.js");
+var Products = require("../models/Products.js");
 
 var appRouter = function(app) {
 
     app
         .get("/buyers", function(req, res) {
             console.log("GET Buyers called");
-            return res.status(200).send(RegisteredMerchants.GetRegisteredMerchants());
+            return res.status(200).send(RegisteredMerchants);
+        })
+        .get("/products", function(req, res) {
+            console.log("GET Products called")
+            return res.status(200).send(Products);
         })
         .post("/buyers", function(req, res) {
             if(!req.body.merchant_id) {
@@ -31,12 +35,15 @@ var appRouter = function(app) {
                 }
 
                 // add this merchant and his product selection to the storage
-                RegisteredMerchants.RegisterMerchant(req.body.merchant_id, Products.GetRandomProducts(5));
+                var newMerchant = RegisteredMerchants.RegisterMerchant(req.body.merchant_id);
 
-                res.status(200).send({
-                    "code": 200,
-                    "message": "successfully registered"
-                });
+                // answer with an initial array containing the products this merchant can start selling with
+                var initialProducts = [];
+                for (var i = 0; i < newMerchant.products.length; i++) {
+                    initialProducts.push(newMerchant.GetSpecificProduct(newMerchant.products[i], 10));
+                }
+
+                res.status(200).send(initialProducts);
             }
         })
         .delete("/buyers", function(req, res) {
@@ -85,14 +92,9 @@ var appRouter = function(app) {
                     });
                 }
 
-                var randomProduct = registeredMerchant.products[getRandomInt(0, registeredMerchant.products.length - 1)];
-                res.send(randomProduct);
+                res.status(200).send(registeredMerchant.GetRandomProduct(1));
             }
         });
-}
-
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 module.exports = appRouter;

@@ -61,20 +61,29 @@ var Products = [
     }
 ];
 
-Products.GetRandomProducts = function (amount) {
-    var randomProducts = [];
+Products.GetRandomProductIDs = function (numberOfDifferentProducts) {
+    var randomProductIDs = [];
 
-    while (randomProducts.length < amount) {
+    while (randomProductIDs.length < numberOfDifferentProducts) {
         var randomProductIndex = getRandomInt(0, Products.length - 1);
         var randomProduct = Products[randomProductIndex];
 
         // check whether product has been chosen already
-        if (randomProducts.indexOf(randomProduct) > -1) continue;
+        if (randomProductIDs.indexOf(randomProduct.product_id) > -1) continue;
 
-        randomProducts.push(randomProduct);
+        randomProductIDs.push(randomProduct.product_id);
     }
 
-    return randomProducts;
+    return randomProductIDs;
+};
+
+Products.GetProductByID = function (product_id) {
+    for (var i = 0; i < Products.length; i++) {
+        if (Products[i].product_id === product_id) {
+            return Products[i];
+        }
+    }
+    return undefined;
 };
 
 // returns a random int (range including min and max)
