@@ -14,7 +14,7 @@ var appRouter = function(app) {
                     return res.status(404).send({
                        "code": 404,
                         "message": "this merchant is not registered with the producer",
-                        "fields" : "unknown 'merchant_id'"
+                        "fields" : "merchant_id"
                     });
                 }
             }
@@ -30,7 +30,7 @@ var appRouter = function(app) {
                     return res.status(404).send({
                         "code": 404,
                         "message": "this product does not exist for this producer",
-                        "fields" : "unknown 'product_id'"
+                        "fields" : "product_id"
                     });
                 }
             }
@@ -43,7 +43,7 @@ var appRouter = function(app) {
                 return res.status(400).send({
                     "code": 400,
                     "message": "missing the merchant_id parameter",
-                    "fields" : "constraints violated for field 'merchant_id'"
+                    "fields" : "merchant_id"
                 });
             } else {
                 console.log("POST Buyers called with merchant " + req.body.merchant_id);
@@ -54,7 +54,7 @@ var appRouter = function(app) {
                     return res.status(409).send({
                         "code": 409,
                         "message": "this merchant_id is already registered with the producer",
-                        "fields" : "merchant_id-body-data"
+                        "fields" : "merchant_id"
                     });
                 }
 
@@ -76,7 +76,7 @@ var appRouter = function(app) {
                 return res.status(400).send({
                     "code": 400,
                     "message": "missing the merchant_id parameter",
-                    "field" : "constraints violated for field 'merchant_id'"
+                    "field" : "merchant_id"
                 });
             } else {
                 // try and delete the merchant
@@ -90,9 +90,9 @@ var appRouter = function(app) {
 
                 // merchant didnt exist, couldnt delete
                 return res.status(409).send({
-                    "code": 404,
+                    "code": 409,
                     "message": "this merchant_id is not registered with the producer",
-                    "field" : "merchant_id-body-data"
+                    "field" : "merchant_id"
                 });
             }
         })
@@ -102,7 +102,7 @@ var appRouter = function(app) {
                 return res.status(400).send({
                     "code": 400,
                     "message": "missing the merchant_id form-parameter",
-                    "field" : "constraints violated for field 'merchant_id'"
+                    "field" : "merchant_id"
                 });
             } else {
                 console.log("GET Buy Product called with merchant_id " + req.query.merchant_id);
@@ -112,13 +112,40 @@ var appRouter = function(app) {
                     return res.status(401).send({
                         "code": 401,
                         "message": "merchant is not known to the producer, please register first",
-                        "field" : "please provide a registered merchant_id as 'merchant_id'-form-parameter"
+                        "field" : "merchant_id"
                     });
                 }
 
-                res.status(200).send(registeredMerchant.GetRandomProduct(1));
+                if (req.query.product_id) {
+                    // merchant wants to buy specific product
+                    var product = registeredMerchant.GetSpecificProduct(req.query.product_id, 1);
+                    if (product === undefined) {
+                        return res.status(403).send({
+                            "code": 403,
+                            "message": "this merchant cannot buy the product with this product_id",
+                            "field" : "product_id"
+                        });
+                    }
+                    if (req.query.amount) {
+                        if (isNumber((req.query.amount))) {
+                            product["amount"] = parseInt(req.query.amount);
+                        } else {
+                            return res.status(406).send({
+                                "code": 406,
+                                "message": "the amount-parameter has to be a number",
+                                "field" : "amount"
+                            });
+                        }
+                    }
+                    return res.status(200).send(product);
+                } else {
+                    // merchant buys random product
+                    return res.status(200).send(registeredMerchant.GetRandomProduct(1));
+                }
             }
         });
 }
+
+function isNumber(obj) { return !isNaN(parseInt(obj)) }
 
 module.exports = appRouter;
