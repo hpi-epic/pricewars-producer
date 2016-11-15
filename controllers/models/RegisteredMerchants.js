@@ -60,7 +60,7 @@ RegisteredMerchant.prototype.GetSpecificProduct = function(product_id, amount) {
 // 'static' function to get an already registered merchant by ID
 RegisteredMerchants.GetRegisteredMerchant = function(merchant_id) {
     for (var i = 0; i < RegisteredMerchants.length; i++) {
-        if (RegisteredMerchants[i].merchant_id === merchant_id) return RegisteredMerchants[i];
+        if (RegisteredMerchants[i].merchant_id == merchant_id) return RegisteredMerchants[i];
     }
     return undefined;
 };
