@@ -21,6 +21,32 @@ var appRouter = function(app) {
                 });
             }
         })
+        .delete("/buyers/:merchant_id", function(req, res) {
+            console.log("DELETE Buyers called");
+            if(!req.params.merchant_id) {
+                return res.status(400).send({
+                    "code": 400,
+                    "message": "missing the merchant_id parameter",
+                    "field" : "merchant_id"
+                });
+            } else {
+                // try and delete the merchant
+                var deleted = RegisteredMerchants.DeleteMerchant(parseInt(req.params.merchant_id));
+                if (deleted) {
+                    return res.status(200).send({
+                        "status": 200,
+                        "message": "merchant was successfully deleted"
+                    });
+                }
+
+                // merchant doesnt exist, couldnt delete
+                return res.status(409).send({
+                    "code": 409,
+                    "message": "this merchant_id is not registered with the producer",
+                    "field" : "merchant_id"
+                });
+            }
+        })
         .post("/buyers/register", function(req, res) {
             if(!req.body.merchant_id) {
                 console.log("POST Buyers called without merchant_id");
@@ -61,32 +87,6 @@ var appRouter = function(app) {
 
                     return res.status(200).send(initialProducts);
                 }
-            }
-        })
-        .delete("/buyers", function(req, res) {
-            console.log("DELETE Buyers called");
-            if(!req.body.merchant_id) {
-                return res.status(400).send({
-                    "code": 400,
-                    "message": "missing the merchant_id parameter",
-                    "field" : "merchant_id"
-                });
-            } else {
-                // try and delete the merchant
-                var deleted = RegisteredMerchants.DeleteMerchant(req.body.merchant_id);
-                if (deleted) {
-                    return res.status(200).send({
-                        "status": 200,
-                        "message": "merchant was successfully deleted"
-                    });
-                }
-
-                // merchant didnt exist, couldnt delete
-                return res.status(409).send({
-                    "code": 409,
-                    "message": "this merchant_id is not registered with the producer",
-                    "field" : "merchant_id"
-                });
             }
         })
         .get("/products", function(req, res) {
