@@ -21,23 +21,6 @@ var appRouter = function(app) {
                 });
             }
         })
-        .get("/products", function(req, res) {
-            console.log("GET Products called");
-            return res.status(200).send(Products);
-        })
-        .get("/products/:product_id", function(req, res) {
-            console.log("GET Products called for " + req.params.product_id);
-            var product = Products.GetProductByID(parseInt(req.params.product_id));
-            if (product !== undefined) {
-                return res.status(200).send([product]);
-            } else {
-                return res.status(404).send({
-                    "code": 404,
-                    "message": "this product does not exist for this producer",
-                    "fields" : "product_id"
-                });
-            }
-        })
         .post("/buyers/register", function(req, res) {
             if(!req.body.merchant_id) {
                 console.log("POST Buyers called without merchant_id");
@@ -106,6 +89,48 @@ var appRouter = function(app) {
                 });
             }
         })
+        .get("/products", function(req, res) {
+            console.log("GET Products called");
+            return res.status(200).send(Products);
+        })
+        .get("/products/:product_id", function(req, res) {
+            if (req.params.product_id == "buy") {
+                // buy random product
+                if(!req.query.merchant_id) {
+                    console.log("GET Buy random Product called without merchant_id");
+                    return res.status(400).send({
+                        "code": 400,
+                        "message": "missing the merchant_id form-parameter",
+                        "field" : "merchant_id"
+                    });
+                } else {
+                    console.log("GET Buy random Product called with merchant_id " + req.query.merchant_id + " and product_id " + req.params.product_id);
+                    var registeredMerchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
+
+                    if (registeredMerchant === undefined) {
+                        return res.status(401).send({
+                            "code": 401,
+                            "message": "merchant is not known to the producer, please register first",
+                            "field": "merchant_id"
+                        });
+                    }
+                    return res.status(200).send(registeredMerchant.GetRandomProduct(1));
+                }
+            } else {
+                // just get specific product information
+                console.log("GET Products called for " + req.params.product_id);
+                var product = Products.GetProductByID(parseInt(req.params.product_id));
+                if (product !== undefined) {
+                    return res.status(200).send([product]);
+                } else {
+                    return res.status(404).send({
+                        "code": 404,
+                        "message": "this product does not exist for this producer",
+                        "fields": "product_id"
+                    });
+                }
+            }
+        })
         .get("/products/:product_id/buy", function(req, res) {
             if(!req.query.merchant_id) {
                 console.log("GET Buy Product called without merchant_id");
@@ -126,56 +151,27 @@ var appRouter = function(app) {
                     });
                 }
 
-                if (req.params.product_id) {
-                    // merchant wants to buy specific product
-                    var product = registeredMerchant.GetSpecificProduct(req.params.product_id, 1);
-                    if (product === undefined) {
-                        return res.status(403).send({
-                            "code": 403,
-                            "message": "this merchant cannot buy the product with this product_id",
-                            "field" : "product_id"
-                        });
-                    }
-                    if (req.query.amount) {
-                        if (isNumber((req.query.amount))) {
-                            product["amount"] = parseInt(req.query.amount);
-                        } else {
-                            return res.status(406).send({
-                                "code": 406,
-                                "message": "the amount-parameter has to be a number",
-                                "field" : "amount"
-                            });
-                        }
-                    }
-                    return res.status(200).send(product);
-                } else {
-                    // merchant buys random product
-                    return res.status(200).send(registeredMerchant.GetRandomProduct(1));
-                }
-            }
-        })
-        .get("/products/buy", function(req, res) {
-            if(!req.query.merchant_id) {
-                console.log("GET Buy Product called without merchant_id");
-                return res.status(400).send({
-                    "code": 400,
-                    "message": "missing the merchant_id form-parameter",
-                    "field" : "merchant_id"
-                });
-            } else {
-                console.log("GET Random Buy Product called with merchant_id " + req.query.merchant_id);
-                var registeredMerchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
-
-                if (registeredMerchant === undefined) {
-                    return res.status(401).send({
-                        "code": 401,
-                        "message": "merchant is not known to the producer, please register first",
-                        "field" : "merchant_id"
+                // merchant wants to buy specific product
+                var product = registeredMerchant.GetSpecificProduct(req.params.product_id, 1);
+                if (product === undefined) {
+                    return res.status(403).send({
+                        "code": 403,
+                        "message": "this merchant cannot buy the product with this product_id",
+                        "field" : "product_id"
                     });
                 }
-
-                // merchant buys random product
-                return res.status(200).send(registeredMerchant.GetRandomProduct(1));
+                if (req.query.amount) {
+                    if (isNumber((req.query.amount))) {
+                        product["amount"] = parseInt(req.query.amount);
+                    } else {
+                        return res.status(406).send({
+                            "code": 406,
+                            "message": "the amount-parameter has to be a number",
+                            "field" : "amount"
+                        });
+                    }
+                }
+                return res.status(200).send(product);
             }
         });
 }
