@@ -6,19 +6,20 @@ var appRouter = function(app) {
     app
         .get("/buyers", function(req, res) {
             console.log("GET Buyers called");
-            if (req.query.merchant_id) {
-                var merchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
-                if (merchant !== undefined) {
-                    return res.status(200).send([merchant]);
-                } else {
-                    return res.status(404).send({
-                       "code": 404,
-                        "message": "this merchant is not registered with the producer",
-                        "fields" : "merchant_id"
-                    });
-                }
-            }
             return res.status(200).send(RegisteredMerchants.GetRegisteredMerchants());
+        })
+        .get("/buyers/:merchant_id", function(req, res) {
+            console.log("GET Buyers called with merchant_id " + req.params.merchant_id);
+            var merchant = RegisteredMerchants.GetRegisteredMerchant(req.params.merchant_id);
+            if (merchant !== undefined) {
+                return res.status(200).send([merchant]);
+            } else {
+                return res.status(404).send({
+                    "code": 404,
+                    "message": "this merchant is not registered with the producer",
+                    "fields" : "merchant_id"
+                });
+            }
         })
         .get("/products", function(req, res) {
             console.log("GET Products called");
@@ -26,19 +27,16 @@ var appRouter = function(app) {
         })
         .get("/products/:product_id", function(req, res) {
             console.log("GET Products called for " + req.params.product_id)
-            if (req.params.product_id) {
-                var product = Products.GetProductByID(parseInt(req.params.product_id));
-                if (product !== undefined) {
-                    return res.status(200).send([product]);
-                } else {
-                    return res.status(404).send({
-                        "code": 404,
-                        "message": "this product does not exist for this producer",
-                        "fields" : "product_id"
-                    });
-                }
+            var product = Products.GetProductByID(parseInt(req.params.product_id));
+            if (product !== undefined) {
+                return res.status(200).send([product]);
+            } else {
+                return res.status(404).send({
+                    "code": 404,
+                    "message": "this product does not exist for this producer",
+                    "fields" : "product_id"
+                });
             }
-            return res.status(200).send(Products);
         })
         .post("/buyers/register", function(req, res) {
             if(!req.body.merchant_id) {
