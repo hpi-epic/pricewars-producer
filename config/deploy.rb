@@ -51,6 +51,7 @@ namespace :deploy do
   task :restart_passenger do
     on roles :all do
       within release_path do
+        execute "npm install"
         execute :touch, "tmp/restart.txt"
       end
     end
