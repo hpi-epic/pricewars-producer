@@ -26,7 +26,7 @@ var appRouter = function(app) {
             return res.status(200).send(Products);
         })
         .get("/products/:product_id", function(req, res) {
-            console.log("GET Products called for " + req.params.product_id)
+            console.log("GET Products called for " + req.params.product_id);
             var product = Products.GetProductByID(parseInt(req.params.product_id));
             if (product !== undefined) {
                 return res.status(200).send([product]);
@@ -56,20 +56,28 @@ var appRouter = function(app) {
                     return res.status(409).send({
                         "code": 409,
                         "message": "this merchant_id is already registered with the producer",
-                        "fields" : "merchant_id"
+                        "fields": "merchant_id"
                     });
                 }
 
                 // add this merchant and his product selection to the storage
-                var newMerchant = RegisteredMerchants.RegisterMerchant(req.body.merchant_id);
+                if (!isNumber(req.body.merchant_id)) {
+                    return res.status(406).send({
+                        "code": 406,
+                        "message": "the merchant_id-parameter has to be a number",
+                        "field": "merchant_id"
+                    });
+                } else {
+                    var newMerchant = RegisteredMerchants.RegisterMerchant(parseInt(req.body.merchant_id));
 
-                // answer with an initial array containing the products this merchant can start selling with
-                var initialProducts = [];
-                for (var i = 0; i < newMerchant.products.length; i++) {
-                    initialProducts.push(newMerchant.GetSpecificProduct(newMerchant.products[i], 10));
+                    // answer with an initial array containing the products this merchant can start selling with
+                    var initialProducts = [];
+                    for (var i = 0; i < newMerchant.products.length; i++) {
+                        initialProducts.push(newMerchant.GetSpecificProduct(newMerchant.products[i], 10));
+                    }
+
+                    return res.status(200).send(initialProducts);
                 }
-
-                return res.status(200).send(initialProducts);
             }
         })
         .delete("/buyers", function(req, res) {
