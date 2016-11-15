@@ -21,9 +21,13 @@ var appRouter = function(app) {
             return res.status(200).send(RegisteredMerchants.GetRegisteredMerchants());
         })
         .get("/products", function(req, res) {
-            console.log("GET Products called")
-            if (req.query.product_id) {
-                var product = Products.GetProductByID(req.query.product_id);
+            console.log("GET Products called");
+            return res.status(200).send(Products);
+        })
+        .get("/products/:product_id", function(req, res) {
+            console.log("GET Products called for " + req.params.product_id)
+            if (req.params.product_id) {
+                var product = Products.GetProductByID(parseInt(req.params.product_id));
                 if (product !== undefined) {
                     return res.status(200).send([product]);
                 } else {
