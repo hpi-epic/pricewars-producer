@@ -1,9 +1,9 @@
-role :www, %w(deployer@XX)
+role :www, %w(deployer@vpn.framsteg.de)
 server "XX", user: "deployer", roles: %w(www)
 
 # uncomment in case of travis, capistrano will have its own
 set :ssh_options, keys: ["config/deploy_id_rsa"] if File.exist?("config/deploy_id_rsa")
-set :ssh_options, port: = 7045
+set :ssh_options, port: 7045
 set :deploy_to, "/var/www/producer"
 
 # Configuration
