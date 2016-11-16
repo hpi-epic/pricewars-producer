@@ -1,9 +1,12 @@
+var crypto = require('crypto'),
+    algorithm = 'aes-256-ctr',
+    public_key = crypto.randomBytes(32).toString('hex');
+
 var Products = [
     {
         uid: 1,
         product_id: 1,
         name: "CD_1",
-        genre: "Rock",
         quality: 1,
         price: 15
     },
@@ -11,7 +14,6 @@ var Products = [
         uid: 2,
         product_id: 1,
         name: "CD_1",
-        genre: "Rock",
         quality: 2,
         price: 12
     },
@@ -19,7 +21,6 @@ var Products = [
         uid: 3,
         product_id: 1,
         name: "CD_1",
-        genre: "Rock",
         quality: 3,
         price: 9
     },
@@ -27,7 +28,6 @@ var Products = [
         uid: 4,
         product_id: 1,
         name: "CD_1",
-        genre: "Rock",
         quality: 4,
         price: 6
     },
@@ -35,7 +35,6 @@ var Products = [
         uid: 5,
         product_id: 2,
         name: "CD_2",
-        genre: "Classic",
         quality: 1,
         price: 15
     },
@@ -43,7 +42,6 @@ var Products = [
         uid: 6,
         product_id: 2,
         name: "CD_2",
-        genre: "Classic",
         quality: 2,
         price: 12
     },
@@ -51,7 +49,6 @@ var Products = [
         uid: 7,
         product_id: 2,
         name: "CD_2",
-        genre: "Classic",
         quality: 3,
         price: 9
     },
@@ -59,7 +56,6 @@ var Products = [
         uid: 8,
         product_id: 2,
         name: "CD_2",
-        genre: "Classic",
         quality: 4,
         price: 6
     },
@@ -67,7 +63,6 @@ var Products = [
         uid: 9,
         product_id: 3,
         name: "CD_3",
-        genre: "Jazz",
         quality: 1,
         price: 15
     },
@@ -75,7 +70,6 @@ var Products = [
         uid: 10,
         product_id: 3,
         name: "CD_3",
-        genre: "Jazz",
         quality: 2,
         price: 12
     },
@@ -83,7 +77,6 @@ var Products = [
         uid: 11,
         product_id: 3,
         name: "CD_3",
-        genre: "Jazz",
         quality: 3,
         price: 9
     },
@@ -91,7 +84,6 @@ var Products = [
         uid: 12,
         product_id: 3,
         name: "CD_3",
-        genre: "Jazz",
         quality: 4,
         price: 6
     },
@@ -99,7 +91,7 @@ var Products = [
         uid: 13,
         product_id: 4,
         name: "CD_4",
-        genre: "Pop",
+        
         quality: 1,
         price: 15
     },
@@ -107,7 +99,6 @@ var Products = [
         uid: 14,
         product_id: 4,
         name: "CD_4",
-        genre: "Pop",
         quality: 2,
         price: 12
     },
@@ -115,7 +106,6 @@ var Products = [
         uid: 15,
         product_id: 4,
         name: "CD_4",
-        genre: "Pop",
         quality: 3,
         price: 9
     },
@@ -123,7 +113,6 @@ var Products = [
         uid: 16,
         product_id: 4,
         name: "CD_4",
-        genre: "Pop",
         quality: 4,
         price: 6
     }
@@ -177,9 +166,34 @@ Products.GetRandomProduct = function() {
     return Products[getRandomInt(0, Products.length - 1)];
 };
 
+// encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
+Products.AddEncryption = function(product) {
+    var hash = generateProductHash(product);
+    //product["debug hash"] = hash;
+    product["hash"] = encrypt(hash);
+    return product;
+};
+
+Products.GetPublicKey = function() {
+    return public_key;
+};
+
 // returns a random int (range including min and max)
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function encrypt(text){
+    var cipher = crypto.createCipher(algorithm, public_key);
+    var crypted = cipher.update(text,'utf8','hex');
+    crypted += cipher.final('hex');
+    return crypted;
+}
+
+function generateProductHash(product) {
+    if (product.amount == undefined) product["amount"] = 1;
+    var hashString = product.uid + ' ' + product.amount  + ' ' + (new Date()).getTime();
+    return hashString;
 }
 
 module.exports = Products;

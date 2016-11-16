@@ -46,7 +46,7 @@ var RegisteredMerchant = function(merchant_id, productIDs) {
 RegisteredMerchant.prototype.GetRandomProductFromOwnStartStock = function(amount) {
     var randomProductID = this.products[getRandomInt(0, this.products.length - 1)];
     var randomProduct = Products.GetProductByUID(randomProductID);
-    if (amount != undefined) randomProduct["amount"] = amount;
+    randomProduct["amount"] = amount;
     return randomProduct;
 };
 
@@ -54,7 +54,7 @@ RegisteredMerchant.prototype.GetSpecificProduct = function(uid, amount) {
     for (var j = 0; j < this.products.length; j++) {
         if (this.products[j] == uid) {
             var requestedProduct = Products.GetProductByUID(this.products[j]);
-            if (amount != undefined) requestedProduct["amount"] = amount;
+            requestedProduct["amount"] = amount;
             return requestedProduct;
         }
     }

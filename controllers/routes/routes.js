@@ -82,7 +82,8 @@ var appRouter = function(app) {
                     // answer with an initial array containing the products this merchant can start selling with
                     var initialProducts = [];
                     for (var i = 0; i < newMerchant.products.length; i++) {
-                        initialProducts.push(newMerchant.GetSpecificProduct(newMerchant.products[i]));
+                        var product = newMerchant.GetSpecificProduct(newMerchant.products[i], 1);
+                        initialProducts.push(Products.AddEncryption(product));
                     }
 
                     return res.status(200).send(initialProducts);
@@ -127,12 +128,16 @@ var appRouter = function(app) {
                         "field": "merchant_id"
                     });
                 }
-                var randomProduct = Products.GetRandomProduct();
+                var randomProduct = Products.GetRandomProduct(1);
                 console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
-                return res.status(200).send(randomProduct);
+                return res.status(200).send(Products.AddEncryption(randomProduct));
             }
+        })
+        .get("/public_key", function(req, res) {
+            // todo for later: add check for permission
+            return res.status(200).send({"public_key" : Products.GetPublicKey()});
         });
-}
+};
 
 function isNumber(obj) { return !isNaN(parseInt(obj)) }
 
