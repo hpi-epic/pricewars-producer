@@ -18,7 +18,11 @@ RegisteredMerchants.LoadRegisteredMerchants = function() {
         if (value === null || value === undefined) {
             usedStorage.setItem('registered_merchants', RegisteredMerchants);
         } else {
-            RegisteredMerchants = value;
+            var tempMerchants = value;
+            tempMerchants.forEach(function(tempMerchant) {
+                var merchant = new RegisteredMerchant(tempMerchant.merchant_id, tempMerchant.products);
+                RegisteredMerchants.push(merchant);
+            });
         }
     });
 }();
@@ -28,7 +32,7 @@ RegisteredMerchants.GetRegisteredMerchants = function() {
 }
 
 RegisteredMerchants.RegisterMerchant = function (merchant_id) {
-    var merchant = new RegisteredMerchant(merchant_id, Products.GetStartProductIDs(4, 1));
+    var merchant = new RegisteredMerchant(merchant_id, Products.GetStartProductUIDs(4, 1));
     RegisteredMerchants.push(merchant);
     usedStorage.setItem('registered_merchants', RegisteredMerchants);
     return merchant;
@@ -39,17 +43,17 @@ var RegisteredMerchant = function(merchant_id, productIDs) {
     this.products = productIDs;
 };
 
-RegisteredMerchant.prototype.GetRandomProduct = function(amount) {
+RegisteredMerchant.prototype.GetRandomProductFromOwnStartStock = function(amount) {
     var randomProductID = this.products[getRandomInt(0, this.products.length - 1)];
-    var randomProduct = Products.GetProductByID(randomProductID);
+    var randomProduct = Products.GetProductByUID(randomProductID);
     randomProduct["amount"] = amount;
     return randomProduct;
 };
 
-RegisteredMerchant.prototype.GetSpecificProduct = function(product_id, amount) {
+RegisteredMerchant.prototype.GetSpecificProduct = function(uid, amount) {
     for (var j = 0; j < this.products.length; j++) {
-        if (this.products[j] == product_id) {
-            var requestedProduct = Products.GetProductByID(this.products[j]);
+        if (this.products[j] == uid) {
+            var requestedProduct = Products.GetProductByUID(this.products[j]);
             requestedProduct["amount"] = amount;
             return requestedProduct;
         }

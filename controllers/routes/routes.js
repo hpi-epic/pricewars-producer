@@ -82,7 +82,8 @@ var appRouter = function(app) {
                     // answer with an initial array containing the products this merchant can start selling with
                     var initialProducts = [];
                     for (var i = 0; i < newMerchant.products.length; i++) {
-                        initialProducts.push(newMerchant.GetSpecificProduct(newMerchant.products[i], 10));
+                        var product = newMerchant.GetSpecificProduct(newMerchant.products[i], 1);
+                        initialProducts.push(Products.AddEncryption(product));
                     }
 
                     return res.status(200).send(initialProducts);
@@ -94,87 +95,49 @@ var appRouter = function(app) {
             return res.status(200).send(Products);
         })
         .get("/products/:product_id", function(req, res) {
-            if (req.params.product_id == "buy") {
-                // buy random product
-                if(!req.query.merchant_id) {
-                    console.log("GET Buy random Product called without merchant_id");
-                    return res.status(400).send({
-                        "code": 400,
-                        "message": "missing the merchant_id form-parameter",
-                        "field" : "merchant_id"
-                    });
-                } else {
-                    console.log("GET Buy random Product called with merchant_id " + req.query.merchant_id + " and product_id " + req.params.product_id);
-                    var registeredMerchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
-
-                    if (registeredMerchant === undefined) {
-                        return res.status(401).send({
-                            "code": 401,
-                            "message": "merchant is not known to the producer, please register first",
-                            "field": "merchant_id"
-                        });
-                    }
-                    return res.status(200).send(registeredMerchant.GetRandomProduct(1));
-                }
+            // get specific product information
+            console.log("GET Products called for " + req.params.product_id);
+            var product = Products.GetProductByUID(parseInt(req.params.product_id));
+            if (product !== undefined) {
+                return res.status(200).send([product]);
             } else {
-                // just get specific product information
-                console.log("GET Products called for " + req.params.product_id);
-                var product = Products.GetProductByID(parseInt(req.params.product_id));
-                if (product !== undefined) {
-                    return res.status(200).send([product]);
-                } else {
-                    return res.status(404).send({
-                        "code": 404,
-                        "message": "this product does not exist for this producer",
-                        "fields": "product_id"
-                    });
-                }
+                return res.status(404).send({
+                    "code": 404,
+                    "message": "this product does not exist for this producer",
+                    "fields": "product_id"
+                });
             }
         })
-        .get("/products/:product_id/buy", function(req, res) {
+        .get("/buy", function(req, res) {
+            // buy random product
             if(!req.query.merchant_id) {
-                console.log("GET Buy Product called without merchant_id");
+                console.log("GET Buy random Product called without merchant_id");
                 return res.status(400).send({
                     "code": 400,
                     "message": "missing the merchant_id form-parameter",
                     "field" : "merchant_id"
                 });
             } else {
-                console.log("GET Buy Product called with merchant_id " + req.query.merchant_id + " and product_id " + req.params.product_id);
+                console.log("GET Buy random Product called with merchant_id " + req.query.merchant_id);
                 var registeredMerchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
 
                 if (registeredMerchant === undefined) {
                     return res.status(401).send({
                         "code": 401,
                         "message": "merchant is not known to the producer, please register first",
-                        "field" : "merchant_id"
+                        "field": "merchant_id"
                     });
                 }
-
-                // merchant wants to buy specific product
-                var product = registeredMerchant.GetSpecificProduct(req.params.product_id, 1);
-                if (product === undefined) {
-                    return res.status(403).send({
-                        "code": 403,
-                        "message": "this merchant cannot buy the product with this product_id",
-                        "field" : "product_id"
-                    });
-                }
-                if (req.query.amount) {
-                    if (isNumber((req.query.amount))) {
-                        product["amount"] = parseInt(req.query.amount);
-                    } else {
-                        return res.status(406).send({
-                            "code": 406,
-                            "message": "the amount-parameter has to be a number",
-                            "field" : "amount"
-                        });
-                    }
-                }
-                return res.status(200).send(product);
+                var randomProduct = Products.GetRandomProduct(1);
+                console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
+                return res.status(200).send(Products.AddEncryption(randomProduct));
             }
+        })
+        .get("/public_key", function(req, res) {
+            // todo for later: add check for permission
+            return res.status(200).send({"public_key" : Products.GetPublicKey()});
         });
-}
+};
 
 function isNumber(obj) { return !isNaN(parseInt(obj)) }
 
