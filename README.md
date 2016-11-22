@@ -2,9 +2,9 @@
 
 
 ## Installation 
-First run *npm install* to install necessary dependencies
+First run ```npm install``` to install necessary dependencies. Then run ```node app.js``` to start the server on port 3000. 
 
-Then run *node app.js* to start the server 
+Access the server by typing ```http://localhost:3000``` into your browser and use an API-endpoint to test it. You can find the API for the producer here: https://hpi-epic.github.io/masterproject-pricewars/api
 
 ## Application Overview
 
