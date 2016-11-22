@@ -53,6 +53,7 @@ namespace :deploy do
       within release_path do
         execute "cd #{release_path}/ && npm install"
         execute :touch, "tmp/restart.txt"
+        execute "chown -R deployer:www-data #{release_path}"
       end
     end
   end
