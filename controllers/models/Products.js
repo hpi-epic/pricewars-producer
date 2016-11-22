@@ -141,6 +141,7 @@ Products.GetStartProductUIDs = function (numberOfRandomProducts, numberOfSharedP
     return randomProductUIDs;
 };
 
+// returns a product by uid, so a unique product with a specific quality
 Products.GetProductByUID = function (uid) {
     for (var i = 0; i < Products.length; i++) {
         if (Products[i].uid === uid) {
@@ -150,6 +151,7 @@ Products.GetProductByUID = function (uid) {
     return undefined;
 };
 
+// returns a product by product_id, ie without quality (and thus uid) information
 Products.GetProductByID = function (product_id) {
     for (var i = 0; i < Products.length; i++) {
         if (Products[i].product_id === product_id) {
@@ -170,7 +172,7 @@ Products.GetRandomProduct = function() {
 Products.AddEncryption = function(product) {
     var hash = generateProductHash(product);
     //product["debug hash"] = hash;
-    product["hash"] = encrypt(hash);
+    product["signature"] = encrypt(hash);
     return product;
 };
 

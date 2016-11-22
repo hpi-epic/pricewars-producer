@@ -110,7 +110,7 @@ var appRouter = function(app) {
         })
         .get("/buy", function(req, res) {
             // buy random product
-            if(!req.query.merchant_id) {
+            /*if(!req.query.merchant_id) {
                 console.log("GET Buy random Product called without merchant_id");
                 return res.status(400).send({
                     "code": 400,
@@ -127,15 +127,16 @@ var appRouter = function(app) {
                         "message": "merchant is not known to the producer, please register first",
                         "field": "merchant_id"
                     });
-                }
+                }*/
                 var randomProduct = Products.GetRandomProduct(1);
-                console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
+                //console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
+                console.log("Sold " + JSON.stringify(randomProduct));
                 return res.status(200).send(Products.AddEncryption(randomProduct));
-            }
+            //}
         })
-        .get("/public_key", function(req, res) {
+        .get("/decryption_key", function(req, res) {
             // todo for later: add check for permission
-            return res.status(200).send({"public_key" : Products.GetPublicKey()});
+            return res.status(200).send({"decryption_key" : Products.GetPublicKey()});
         });
 };
 
