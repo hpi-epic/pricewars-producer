@@ -169,9 +169,8 @@ Products.GetRandomProduct = function() {
 };
 
 // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
-Products.AddEncryption = function(product) {
-    var hash = generateProductHash(product);
-    //product["debug hash"] = hash;
+Products.AddEncryption = function(product, timeOfBuy) {
+    var hash = generateProductSignature(product, timeOfBuy);
     product["signature"] = encrypt(hash);
     return product;
 };
@@ -192,9 +191,9 @@ function encrypt(text){
     return crypted;
 }
 
-function generateProductHash(product) {
+function generateProductSignature(product, timeOfBuy) {
     if (product.amount == undefined) product["amount"] = 1;
-    var hashString = product.uid + ' ' + product.amount  + ' ' + (new Date()).getTime();
+    var hashString = product.uid + ' ' + product.amount  + ' ' + timeOfBuy;
     return hashString;
 }
 

@@ -57,7 +57,7 @@ describe('API Tests', function() {
         it('should give me a random product',(done) =>
         {
             chai.request(server)
-            .get('/buy')
+            .get('/buy?merchant_id=12345')
             .end(function(err, res){
                 res.should.have.status(200);
                 res.body.should.be.a('object');
