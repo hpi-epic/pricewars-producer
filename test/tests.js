@@ -38,17 +38,17 @@ describe('API Tests', function() {
                 });
         });
 
-        var public_key;
+        var decryption_key;
         it('should give me a key to decrypt the product hash',(done) =>
         {
             chai.request(server)
-            .get('/public_key')
+            .get('/decryption_key')
             .end(function(err, res){
                 res.should.have.status(200);
                 res.body.should.be.a('object');
-                res.body.should.have.property('public_key');
-                res.body.public_key.should.be.a('string');
-                public_key = res.body.public_key;
+                res.body.should.have.property('decryption_key');
+                res.body.decryption_key.should.be.a('string');
+                decryption_key = res.body.decryption_key;
                 done();
             });
         });
@@ -57,7 +57,7 @@ describe('API Tests', function() {
         it('should give me a random product',(done) =>
         {
             chai.request(server)
-            .get('/buy')
+            .get('/buy?merchant_id=12345')
             .end(function(err, res){
                 res.should.have.status(200);
                 res.body.should.be.a('object');
@@ -80,10 +80,10 @@ describe('API Tests', function() {
                 res.body.should.have.property('amount');
                 res.body.amount.should.be.a('number');
 
-                res.body.should.have.property('hash');
-                res.body.hash.should.be.a('string');
+                res.body.should.have.property('signature');
+                res.body.signature.should.be.a('string');
 
-                var decryptedHash = decrypt(res.body.hash, public_key);
+                var decryptedHash = decrypt(res.body.signature, decryption_key);
                 var decryptedComponents = decryptedHash.split(' ');
                 decryptedComponents.length.should.be.eql(3);
                 parseInt(decryptedComponents[0]).should.be.eql(res.body.uid);

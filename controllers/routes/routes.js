@@ -2,6 +2,7 @@ var appRouter = function(app) {
 
     var RegisteredMerchants = require("../models/RegisteredMerchants.js");
     var Products = require("../models/Products.js");
+    var KafkaLogger = require("../logging/KafkaLogger.js")
 
     app
         .get("/buyers", function(req, res) {
@@ -119,7 +120,7 @@ var appRouter = function(app) {
                 });
             } else {
                 console.log("GET Buy random Product called with merchant_id " + req.query.merchant_id);
-                var registeredMerchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
+                /*var registeredMerchant = RegisteredMerchants.GetRegisteredMerchant(req.query.merchant_id);
 
                 if (registeredMerchant === undefined) {
                     return res.status(401).send({
@@ -127,15 +128,21 @@ var appRouter = function(app) {
                         "message": "merchant is not known to the producer, please register first",
                         "field": "merchant_id"
                     });
-                }
+                }*/
+
                 var randomProduct = Products.GetRandomProduct(1);
+                var timeOfBuy = (new Date()).getTime();
+
+                // log to console and to kafka
                 console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
-                return res.status(200).send(Products.AddEncryption(randomProduct));
+                KafkaLogger.LogBuy(randomProduct, req.query.merchant_id, timeOfBuy);
+
+                return res.status(200).send(Products.AddEncryption(randomProduct, timeOfBuy));
             }
         })
-        .get("/public_key", function(req, res) {
+        .get("/decryption_key", function(req, res) {
             // todo for later: add check for permission
-            return res.status(200).send({"public_key" : Products.GetPublicKey()});
+            return res.status(200).send({"decryption_key" : Products.GetPublicKey()});
         });
 };
 
