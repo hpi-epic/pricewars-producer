@@ -36,12 +36,13 @@ var appRouter = function(app) {
 
                 var randomProduct = Products.GetRandomProduct(1);
                 var timeOfBuy = (new Date()).getTime();
+                Products.AddEncryption(randomProduct, timeOfBuy);
 
                 // log to console and to kafka
                 console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
                 KafkaLogger.LogBuy(randomProduct, req.query.merchant_id, timeOfBuy);
 
-                return res.status(200).send(Products.AddEncryption(randomProduct, timeOfBuy));
+                return res.status(200).send(randomProduct);
             }
         })
         .get("/decryption_key", function(req, res) {

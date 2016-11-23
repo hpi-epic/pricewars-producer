@@ -164,8 +164,11 @@ Products.GetProductByID = function (product_id) {
     return undefined;
 };
 
-Products.GetRandomProduct = function() {
-    return Products[getRandomInt(0, Products.length - 1)];
+Products.GetRandomProduct = function(amount) {
+    if (amount == undefined) amount = 1;
+    var randomProduct = Products[getRandomInt(0, Products.length - 1)];
+    randomProduct["amount"] = amount;
+    return randomProduct;
 };
 
 // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
@@ -192,9 +195,8 @@ function encrypt(text){
 }
 
 function generateProductSignature(product, timeOfBuy) {
-    if (product.amount == undefined) product["amount"] = 1;
-    var hashString = product.uid + ' ' + product.amount  + ' ' + timeOfBuy;
-    return hashString;
+    var amount =product.amount == undefined ? 1 : product.amount;
+    return product.uid + ' ' + amount  + ' ' + timeOfBuy;
 }
 
 module.exports = Products;

@@ -11,7 +11,7 @@ var kafkaLogger = {
 
     LogBuy: function(product, merchant_id, timeOfBuy) {
         var saleInfo = JSON.parse(JSON.stringify(product));
-        saleInfo["merchant_id"] = merchant_id;
+        saleInfo["merchant_id"] = parseInt(merchant_id);
         saleInfo["timestamp"] = timeOfBuy;
         producer.send({
             topic: 'producer',
