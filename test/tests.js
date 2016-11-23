@@ -26,14 +26,12 @@ describe('API Tests', function() {
     });
 
     describe('Producer API', function() {
-        it('should GET all the registered merchants',(done) =>
+        it('should GET denied if asking for a product without providing a merchant_id',(done) =>
         {
             chai.request(server)
-                .get('/buyers')
+                .get('/buy')
                 .end(function(err, res){
-                    res.should.have.status(200);
-                    res.body.should.be.a('array');
-                    res.body.length.should.be.eql(0);
+                    res.should.have.status(400);
                     done();
                 });
         });
