@@ -187,8 +187,31 @@ var Products = {
 
     SetProducts : function(new_products) {
         this.products = new_products;
-    }
+    },
 
+    SetProduct : function(uid, newProduct) {
+        for (var i = 0; i < this.products.length; i++) {
+            if (this.products[i].uid === uid) {
+                this.products[i] = newProduct;
+                return true;
+            }
+        }
+        return false;
+    },
+
+    DeleteProduct : function(uid) {
+        for (var i = 0; i < this.products.length; i++) {
+            if (this.products[i].uid === uid) {
+                this.products.splice(i, 1);
+                return true;
+            }
+        }
+        return false;
+    },
+
+    AddProduct : function(newproduct) {
+       this.products.push(newproduct);
+    },
 };
 
 // returns a random int (range including min and max)

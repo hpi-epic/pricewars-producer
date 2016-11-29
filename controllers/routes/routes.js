@@ -8,11 +8,10 @@ var appRouter = function(app) {
             console.log("GET Products called");
             return res.status(200).send(Products);
         })
-        .post("/products", function(req, res) {
-            var bla = req.body.products;
+        .put("/products", function(req, res) {
             if (Object.prototype.toString.call( req.body.products ) === '[object Array]' ) {
                 Products.SetProducts(req.body.products);
-                return res.status(200);
+                return res.status(200).send();
             } else {
                 return res.status(406).send({
                     "code": 406,
@@ -20,17 +19,55 @@ var appRouter = function(app) {
                 });
             }
         })
-        .get("/products/:product_id", function(req, res) {
+        .post("/products", function(req, res) {
+            if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
+                for (var i = 0; i < req.body.length; i++) {
+                    Products.AddProduct(req.body[i]);
+                }
+                return res.status(200).send();
+            } else {
+                Products.AddProduct(req.body);
+                return res.status(200).send();
+            }
+        })
+        .get("/products/:uid", function(req, res) {
             // get specific product information
-            console.log("GET Products called for " + req.params.product_id);
-            var product = Products.GetProductByUID(parseInt(req.params.product_id));
+            console.log("GET Products called for " + req.params.uid);
+            var product = Products.GetProductByUID(parseInt(req.params.uid));
             if (product !== undefined) {
                 return res.status(200).send([product]);
             } else {
                 return res.status(404).send({
                     "code": 404,
                     "message": "this product does not exist for this producer",
-                    "fields": "product_id"
+                    "fields": "uid"
+                });
+            }
+        })
+        .put("/products/:uid", function(req, res) {
+            if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
+                if (Products.SetProduct(parseInt(req.params.uid), req.body[0])) {
+                    return res.status(200).send();
+                } else {
+                    return res.status(404).send({
+                        "code": 404,
+                        "message": "this product does not exist for this producer",
+                    });
+                }
+            } else {
+                return res.status(406).send({
+                    "code": 406,
+                    "message": "product has to be in the form of an array"
+                });
+            }
+        })
+        .delete("/products/:uid", function(req, res) {
+            if (Products.DeleteProduct(parseInt(req.params.uid))) {
+                return res.status(200).send();
+            } else {
+                return res.status(404).send({
+                    "code": 404,
+                    "message": "this product does not exist for this producer",
                 });
             }
         })
