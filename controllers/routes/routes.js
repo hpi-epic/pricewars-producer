@@ -8,6 +8,18 @@ var appRouter = function(app) {
             console.log("GET Products called");
             return res.status(200).send(Products);
         })
+        .post("/products", function(req, res) {
+            var bla = req.body.products;
+            if (Object.prototype.toString.call( req.body.products ) === '[object Array]' ) {
+                Products.SetProducts(req.body.products);
+                return res.status(200);
+            } else {
+                return res.status(406).send({
+                    "code": 406,
+                    "message": "products have to be in the form of an array"
+                });
+            }
+        })
         .get("/products/:product_id", function(req, res) {
             // get specific product information
             console.log("GET Products called for " + req.params.product_id);
