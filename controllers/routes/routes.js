@@ -22,12 +22,23 @@ var appRouter = function(app) {
         .post("/products", function(req, res) {
             if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
                 for (var i = 0; i < req.body.length; i++) {
-                    Products.AddProduct(req.body[i]);
+                    if (!Products.AddProduct(req.body[i])) {
+                        return res.status(406).send({
+                            "code": 406,
+                            "message": "the product with this product_id and quality already exists"
+                        });
+                    }
                 }
                 return res.status(200).send();
             } else {
-                Products.AddProduct(req.body);
-                return res.status(200).send();
+                if (Products.AddProduct(req.body)) {
+                    return res.status(200).send();
+                } else {
+                    return res.status(406).send({
+                        "code": 406,
+                        "message": "the product with this product_id and quality already exists"
+                    });
+                }
             }
         })
         .get("/products/:uid", function(req, res) {
@@ -51,7 +62,7 @@ var appRouter = function(app) {
                 } else {
                     return res.status(404).send({
                         "code": 404,
-                        "message": "this product does not exist for this producer",
+                        "message": "this product UID is not known or a product with this product_id and quality already exists",
                     });
                 }
             } else {

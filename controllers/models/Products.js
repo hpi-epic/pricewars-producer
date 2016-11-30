@@ -7,113 +7,112 @@ var Products = {
     products :
         [
             {
-                uid: 1,
-                product_id: 1,
-                name: "CD_1",
-                quality: 1,
-                price: 15
-            },
-            {
-                uid: 2,
-                product_id: 1,
-                name: "CD_1",
-                quality: 2,
-                price: 12
-            },
-            {
-                uid: 3,
-                product_id: 1,
-                name: "CD_1",
-                quality: 3,
-                price: 9
-            },
-            {
-                uid: 4,
-                product_id: 1,
-                name: "CD_1",
-                quality: 4,
-                price: 6
-            },
-            {
-                uid: 5,
-                product_id: 2,
-                name: "CD_2",
-                quality: 1,
-                price: 15
-            },
-            {
-                uid: 6,
-                product_id: 2,
-                name: "CD_2",
-                quality: 2,
-                price: 12
-            },
-            {
-                uid: 7,
-                product_id: 2,
-                name: "CD_2",
-                quality: 3,
-                price: 9
-            },
-            {
-                uid: 8,
-                product_id: 2,
-                name: "CD_2",
-                quality: 4,
-                price: 6
-            },
-            {
-                uid: 9,
-                product_id: 3,
-                name: "CD_3",
-                quality: 1,
-                price: 15
-            },
-            {
-                uid: 10,
-                product_id: 3,
-                name: "CD_3",
-                quality: 2,
-                price: 12
-            },
-            {
                 uid: 11,
-                product_id: 3,
-                name: "CD_3",
-                quality: 3,
-                price: 9
+                product_id: 1,
+                name: "CD_1",
+                quality: 1,
+                price: 15
             },
             {
                 uid: 12,
+                product_id: 1,
+                name: "CD_1",
+                quality: 2,
+                price: 12
+            },
+            {
+                uid: 13,
+                product_id: 1,
+                name: "CD_1",
+                quality: 3,
+                price: 9
+            },
+            {
+                uid: 14,
+                product_id: 1,
+                name: "CD_1",
+                quality: 4,
+                price: 6
+            },
+            {
+                uid: 21,
+                product_id: 2,
+                name: "CD_2",
+                quality: 1,
+                price: 15
+            },
+            {
+                uid: 22,
+                product_id: 2,
+                name: "CD_2",
+                quality: 2,
+                price: 12
+            },
+            {
+                uid: 23,
+                product_id: 2,
+                name: "CD_2",
+                quality: 3,
+                price: 9
+            },
+            {
+                uid: 24,
+                product_id: 2,
+                name: "CD_2",
+                quality: 4,
+                price: 6
+            },
+            {
+                uid: 31,
+                product_id: 3,
+                name: "CD_3",
+                quality: 1,
+                price: 15
+            },
+            {
+                uid: 32,
+                product_id: 3,
+                name: "CD_3",
+                quality: 2,
+                price: 12
+            },
+            {
+                uid: 33,
+                product_id: 3,
+                name: "CD_3",
+                quality: 3,
+                price: 9
+            },
+            {
+                uid: 34,
                 product_id: 3,
                 name: "CD_3",
                 quality: 4,
                 price: 6
             },
             {
-                uid: 13,
+                uid: 41,
                 product_id: 4,
                 name: "CD_4",
-
                 quality: 1,
                 price: 15
             },
             {
-                uid: 14,
+                uid: 42,
                 product_id: 4,
                 name: "CD_4",
                 quality: 2,
                 price: 12
             },
             {
-                uid: 15,
+                uid: 43,
                 product_id: 4,
                 name: "CD_4",
                 quality: 3,
                 price: 9
             },
             {
-                uid: 16,
+                uid: 44,
                 product_id: 4,
                 name: "CD_4",
                 quality: 4,
@@ -147,7 +146,7 @@ var Products = {
     // returns a product by uid, so a unique product with a specific quality
     GetProductByUID : function (uid) {
         for (var i = 0; i < this.products.length; i++) {
-            if (this.products[i].uid === uid) {
+            if (this.products[i].uid == uid) {
                 return this.products[i];
             }
         }
@@ -191,7 +190,15 @@ var Products = {
 
     SetProduct : function(uid, newProduct) {
         for (var i = 0; i < this.products.length; i++) {
-            if (this.products[i].uid === uid) {
+            if (this.products[i].uid == uid) {
+                newProduct["uid"] = "" + newProduct["product_id"] + newProduct["quality"];
+
+                // make sure this uid does not exist yet
+                var existingProduct = this.GetProductByUID(newProduct["uid"]);
+                if (existingProduct) {
+                    return false;
+                }
+
                 this.products[i] = newProduct;
                 return true;
             }
@@ -209,8 +216,17 @@ var Products = {
         return false;
     },
 
-    AddProduct : function(newproduct) {
-       this.products.push(newproduct);
+    AddProduct : function(newProduct) {
+        newProduct["uid"] = "" + newProduct["product_id"] + newProduct["quality"];
+
+        // make sure this uid does not exist yet
+        var existingProduct = this.GetProductByUID(newProduct["uid"]);
+        if (!existingProduct) {
+            this.products.push(newProduct);
+            return true;
+        } else {
+            return false;
+        }
     },
 
     GetProducts : function() {
