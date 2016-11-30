@@ -212,6 +212,10 @@ var Products = {
     AddProduct : function(newproduct) {
        this.products.push(newproduct);
     },
+
+    GetProducts : function() {
+        return this.products;
+    }
 };
 
 // returns a random int (range including min and max)

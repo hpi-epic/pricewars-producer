@@ -6,7 +6,7 @@ var appRouter = function(app) {
     app
         .get("/products", function(req, res) {
             console.log("GET Products called");
-            return res.status(200).send(Products);
+            return res.status(200).send(Products.GetProducts());
         })
         .put("/products", function(req, res) {
             if (Object.prototype.toString.call( req.body.products ) === '[object Array]' ) {
@@ -84,7 +84,7 @@ var appRouter = function(app) {
                 console.log("GET Buy random Product called with merchant_id " + req.query.merchant_id);
 
                 var randomProduct = Products.GetRandomProduct(1);
-                var timeOfBuy = (new Date()).getTime();
+                var timeOfBuy = (new Date()).toISOString();
                 Products.AddEncryption(randomProduct, timeOfBuy);
 
                 // log to console and to kafka
