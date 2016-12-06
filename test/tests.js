@@ -7,10 +7,6 @@ var should = chai.should();
 
 var storage = require('node-persist');
 var testStorage;
-var tempStorage;
-
-var crypto = require('crypto'),
-    algorithm = 'aes-256-ctr';
 
 chai.use(chaiHttp);
 
@@ -80,23 +76,10 @@ describe('API Tests', function() {
 
                 res.body.should.have.property('signature');
                 res.body.signature.should.be.a('string');
-
-                var decryptedHash = decrypt(res.body.signature, decryption_key);
-                var decryptedComponents = decryptedHash.split(' ');
-                decryptedComponents.length.should.be.eql(3);
-                parseInt(decryptedComponents[0]).should.be.eql(res.body.uid);
-                parseInt(decryptedComponents[1]).should.be.eql(res.body.amount);
-
+                
                 done();
             });
         });
 
     });
 });
-
-function decrypt(text, key){
-    var decipher = crypto.createDecipher(algorithm,key);
-    var dec = decipher.update(text,'hex','utf8');
-    dec += decipher.final('utf8');
-    return dec;
-}

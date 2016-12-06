@@ -1,6 +1,9 @@
 var crypto = require('crypto'),
-    algorithm = 'aes-256-ctr',
-    public_key = crypto.randomBytes(32).toString('hex');
+    key = crypto.randomBytes(16);
+
+var aesjs = require("aes-js");
+var public_key = aesjs.util.convertStringToBytes(key);
+var aesEcb = new aesjs.ModeOfOperation.ecb(key);
 
 var Products = {
 
@@ -181,7 +184,7 @@ var Products = {
     },
 
     GetPublicKey : function() {
-        return public_key;
+        return  public_key.toString('base64');
     },
 
     SetProducts : function(new_products) {
@@ -240,15 +243,26 @@ function getRandomInt(min, max) {
 }
 
 function encrypt(text){
-    var cipher = crypto.createCipher(algorithm, public_key);
-    var crypted = cipher.update(text,'utf8','hex');
-    crypted += cipher.final('hex');
-    return crypted;
+    text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));
+    var cipher = aesEcb.encrypt(text);
+    return cipher.toString('base64');
 }
 
 function generateProductSignature(product, timeOfBuy) {
-    var amount =product.amount == undefined ? 1 : product.amount;
+    var amount = product.amount == undefined ? 1 : product.amount;
     return product.uid + ' ' + amount  + ' ' + timeOfBuy;
+}
+
+function addWhitespacePadding(text) {
+    while (text.length % 16 != 0 || !powerOf2(text.length / 16)) text += " ";
+    return text;
+}
+
+function powerOf2 (input) {
+    while (input > 1 && input/2 !== 0 && input%2 === 0) {
+        input /= 2;
+    }
+    return input === 1;
 }
 
 module.exports = Products;
