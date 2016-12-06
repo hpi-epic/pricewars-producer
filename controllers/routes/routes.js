@@ -56,13 +56,19 @@ var appRouter = function(app) {
             }
         })
         .put("/products/:uid", function(req, res) {
+            if (Products.GetProductByUID(parseInt(req.params.uid)) == null) {
+                return res.status(404).send({
+                    "code": 404,
+                    "message": "a product with this uid does not exist"
+                });
+            }
             if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
                 if (Products.SetProduct(parseInt(req.params.uid), req.body[0])) {
                     return res.status(200).send();
                 } else {
                     return res.status(404).send({
                         "code": 404,
-                        "message": "this product UID is not known or a product with this product_id and quality already exists",
+                        "message": "A product with this product_id and quality already exists",
                     });
                 }
             } else {
