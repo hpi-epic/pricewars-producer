@@ -194,7 +194,7 @@ var Products = {
     SetProduct : function(uid, newProduct) {
         for (var i = 0; i < this.products.length; i++) {
             if (this.products[i].uid == uid) {
-                newProduct["uid"] = "" + newProduct["product_id"] + newProduct["quality"];
+                newProduct["uid"] = parseInt("" + newProduct["product_id"] + newProduct["quality"]);
 
                 // make sure this uid does not exist yet
                 var existingProduct = this.GetProductByUID(newProduct["uid"]);
@@ -220,7 +220,7 @@ var Products = {
     },
 
     AddProduct : function(newProduct) {
-        newProduct["uid"] = "" + newProduct["product_id"] + newProduct["quality"];
+        newProduct["uid"] = parseInt("" + newProduct["product_id"] + newProduct["quality"]);
 
         // make sure this uid does not exist yet
         var existingProduct = this.GetProductByUID(newProduct["uid"]);
