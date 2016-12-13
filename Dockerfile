@@ -1,5 +1,11 @@
 FROM node:6
-ADD . /producer
-WORKDIR /producer
+
+ENV APP_HOME /producer
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+
+ADD . $APP_HOME
+
 RUN npm install
-CMD node app.js
+
+CMD ["node", "app.js"]
