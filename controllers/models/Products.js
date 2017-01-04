@@ -177,8 +177,8 @@ var Products = {
     },
 
     // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
-    AddEncryption : function(product, timeOfBuy) {
-        var hash = generateProductSignature(product, timeOfBuy);
+    AddEncryption : function(merchant_hash, product, timeOfBuy) {
+        var hash = generateProductSignature(merchant_hash, product, timeOfBuy);
         product["signature"] = encrypt(hash);
         return product;
     },
@@ -248,9 +248,9 @@ function encrypt(text){
     return cipher.toString('base64');
 }
 
-function generateProductSignature(product, timeOfBuy) {
+function generateProductSignature(merchant_hash, product, timeOfBuy) {
     var amount = product.amount == undefined ? 1 : product.amount;
-    return product.uid + ' ' + amount  + ' ' + timeOfBuy;
+    return product.uid + ' ' + amount  + ' ' + merchant_hash + ' ' + timeOfBuy;
 }
 
 function addWhitespacePadding(text) {

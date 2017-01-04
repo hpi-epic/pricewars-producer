@@ -98,15 +98,16 @@ var appRouter = function(app) {
                     "field" : "merchant_id"
                 });
             } else {
-                console.log("GET Buy random Product called with merchant_id " + req.query.merchant_id);
+                var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_id));
+                console.log("GET Buy random Product called with merchant_ id " + hash;
 
                 var randomProduct = Products.GetRandomProduct(1);
                 var timeOfBuy = (new Date()).toISOString();
-                Products.AddEncryption(randomProduct, timeOfBuy);
+                Products.AddEncryption(merchant_hash, randomProduct, timeOfBuy);
 
                 // log to console and to kafka
-                console.log("Sold " + JSON.stringify(randomProduct) + " to " + req.query.merchant_id);
-                KafkaLogger.LogBuy(randomProduct, req.query.merchant_id, timeOfBuy);
+                console.log("Sold " + JSON.stringify(randomProduct) + " to " + merchant_hash);
+                KafkaLogger.LogBuy(randomProduct, merchant_hash, timeOfBuy);
 
                 return res.status(200).send(randomProduct);
             }
