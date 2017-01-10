@@ -99,7 +99,7 @@ var appRouter = function(app) {
                 });
             } else {
                 var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_id);
-                console.log("GET Buy random Product called with merchant_ id " + hash;
+                console.log("GET Buy random Product called with merchant_ id " + hash);
 
                 var randomProduct = Products.GetRandomProduct(1);
                 var timeOfBuy = (new Date()).toISOString();
