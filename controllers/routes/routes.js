@@ -98,7 +98,7 @@ var appRouter = function(app) {
                     "field" : "merchant_id"
                 });
             } else {
-                var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_id));
+                var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_id);
                 console.log("GET Buy random Product called with merchant_ id " + hash;
 
                 var randomProduct = Products.GetRandomProduct(1);

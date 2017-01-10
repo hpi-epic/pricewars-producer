@@ -1,8 +1,9 @@
 # Price Wars - Producer Component
 
+The meta repository containing general information can be found [here](https://github.com/hpi-epic/masterproject-pricewars).
 
-## Installation 
-First run ```npm install``` to install necessary dependencies. Then run ```node app.js``` to start the server on port 3000. 
+## Installation
+First run ```npm install``` to install necessary dependencies. Then run ```node app.js``` to start the server on port 3000.
 
 Access the server by typing ```http://localhost:3000``` into your browser and use an API-endpoint to test it. You can find the API for the producer here: https://hpi-epic.github.io/masterproject-pricewars/api
 
