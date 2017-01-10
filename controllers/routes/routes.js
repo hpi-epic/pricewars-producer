@@ -9,8 +9,8 @@ var appRouter = function(app) {
             return res.status(200).send(Products.GetProducts());
         })
         .put("/products", function(req, res) {
-            if (Object.prototype.toString.call( req.body.products ) === '[object Array]' ) {
-                Products.SetProducts(req.body.products);
+            if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
+                Products.SetProducts(req.body);
                 return res.status(200).send();
             } else {
                 return res.status(406).send({
@@ -90,15 +90,15 @@ var appRouter = function(app) {
         })
         .get("/buy", function(req, res) {
             // buy random product
-            if(!req.query.merchant_id) {
+            if(!req.query.merchant_token) {
                 console.log("GET Buy random Product called without merchant_id");
                 return res.status(400).send({
                     "code": 400,
-                    "message": "missing the merchant_id form-parameter",
-                    "field" : "merchant_id"
+                    "message": "missing the merchant_token",
+                    "field" : "merchant_token"
                 });
             } else {
-                var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_id);
+                var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_token);
                 console.log("GET Buy random Product called with merchant_ id " + merchant_hash);
 
                 var randomProduct = Products.GetRandomProduct(1);
