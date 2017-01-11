@@ -1,6 +1,5 @@
 var RegisteredMerchants = [];
 
-var Products = require('../models/Products.js');
 var storage = require('node-persist');
 var usedStorage;
 
@@ -29,24 +28,46 @@ RegisteredMerchants.LoadRegisteredMerchants = function() {
 
 RegisteredMerchants.GetRegisteredMerchants = function() {
     return RegisteredMerchants;
-}
+};
 
-RegisteredMerchants.RegisterMerchant = function (merchant_id) {
-    var merchant = new RegisteredMerchant(merchant_id, Products.GetStartProductUIDs(4, 1));
+RegisteredMerchants.RegisterMerchant = function (merchant_id, product_choice) {
+    var merchant = new RegisteredMerchant(merchant_id, product_choice);
     RegisteredMerchants.push(merchant);
     usedStorage.setItem('registered_merchants', RegisteredMerchants);
+
     return merchant;
 };
 
-var RegisteredMerchant = function(merchant_id, productIDs) {
+var RegisteredMerchant = function(merchant_id, product_choice) {
     this.merchant_id = merchant_id;
-    this.products = productIDs;
+    this.products = product_choice;
 };
 
-RegisteredMerchant.prototype.GetRandomProductFromOwnStartStock = function(amount) {
-    var randomProductID = this.products[getRandomInt(0, this.products.length - 1)];
-    var randomProduct = Products.GetProductByUID(randomProductID);
+RegisteredMerchant.prototype.GetRandomProductFromOwnStock = function(amount) {
+    if (this.products.length == 0) return undefined;
+
+    if (amount == undefined || amount < 1) amount = 1;
+    var randomProductPos = getRandomInt(0, this.products.length - 1);
+
+    // get a random product
+    var randomProduct = this.products[randomProductPos];
+    while (randomProduct.stock != -1 && randomProduct.stock < amount) {
+            randomProductPos = getRandomInt(0, this.products.length - 1);
+            randomProduct = this.products[randomProductPos];
+    }
     randomProduct["amount"] = amount;
+
+    // decrease that product's amount and if it's out of stock, delete it
+    if (this.products[randomProductPos].stock != -1) {
+        this.products[randomProductPos].stock -= amount;
+        if (this.products[randomProductPos].stock == 0) {
+            this.products.splice(randomProductPos, 1);
+        }
+    }
+
+    // save the changes
+    usedStorage.setItem('registered_merchants', RegisteredMerchants);
+
     return randomProduct;
 };
 

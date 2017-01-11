@@ -1,7 +1,7 @@
 var appRouter = function(app) {
 
     var Products = require("../models/Products.js");
-    var KafkaLogger = require("../logging/KafkaLogger.js")
+    var KafkaLogger = require("../logging/KafkaLogger.js");
 
     app
         .get("/products", function(req, res) {
@@ -68,7 +68,7 @@ var appRouter = function(app) {
                 } else {
                     return res.status(404).send({
                         "code": 404,
-                        "message": "A product with this product_id and quality already exists",
+                        "message": "other products than the one with the specified UID would be overwritten",
                     });
                 }
             } else {
@@ -101,15 +101,23 @@ var appRouter = function(app) {
                 var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_token);
                 console.log("GET Buy random Product called with merchant_ id " + merchant_hash);
 
-                var randomProduct = Products.GetRandomProduct(1);
-                var timeOfBuy = (new Date()).toISOString();
-                Products.AddEncryption(merchant_hash, randomProduct, timeOfBuy);
+                var randomProduct = Products.GetRandomProduct(merchant_hash, 1);
 
-                // log to console and to kafka
-                console.log("Sold " + JSON.stringify(randomProduct) + " to " + merchant_hash);
-                KafkaLogger.LogBuy(randomProduct, merchant_hash, timeOfBuy);
+                if (randomProduct == undefined) {
+                    return res.status(410).send({
+                        "code": 410,
+                        "message": "no items left in stock"
+                    });
+                } else {
+                    var timeOfBuy = (new Date()).toISOString();
+                    Products.AddEncryption(merchant_hash, randomProduct, timeOfBuy);
 
-                return res.status(200).send(randomProduct);
+                    // log to console and to kafka
+                    console.log("Sold " + JSON.stringify(randomProduct) + " to " + merchant_hash);
+                    KafkaLogger.LogBuy(randomProduct, merchant_hash, timeOfBuy);
+
+                    return res.status(200).send(randomProduct);
+                }
             }
         })
         .get("/decryption_key", function(req, res) {
