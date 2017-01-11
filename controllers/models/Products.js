@@ -18,7 +18,7 @@ var Products = {
                 quality: 1,
                 price: 15,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -28,7 +28,7 @@ var Products = {
                 quality: 2,
                 price: 12,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -38,7 +38,7 @@ var Products = {
                 quality: 3,
                 price: 9,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -48,7 +48,7 @@ var Products = {
                 quality: 4,
                 price: 6,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -58,7 +58,7 @@ var Products = {
                 quality: 1,
                 price: 15,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -68,7 +68,7 @@ var Products = {
                 quality: 2,
                 price: 12,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -78,7 +78,7 @@ var Products = {
                 quality: 3,
                 price: 9,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -88,7 +88,7 @@ var Products = {
                 quality: 4,
                 price: 6,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -98,7 +98,7 @@ var Products = {
                 quality: 1,
                 price: 15,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -108,7 +108,7 @@ var Products = {
                 quality: 2,
                 price: 12,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -118,7 +118,7 @@ var Products = {
                 quality: 3,
                 price: 9,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -128,7 +128,7 @@ var Products = {
                 quality: 4,
                 price: 6,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -138,7 +138,7 @@ var Products = {
                 quality: 1,
                 price: 15,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -148,7 +148,7 @@ var Products = {
                 quality: 2,
                 price: 12,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -158,7 +158,7 @@ var Products = {
                 quality: 3,
                 price: 9,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             },
             {
@@ -168,7 +168,7 @@ var Products = {
                 quality: 4,
                 price: 6,
                 stock: -1,
-                time_to_life: -1,
+                time_to_live: -1,
                 start_of_lifetime: -1
             }
         ],
@@ -299,7 +299,7 @@ function createValidProduct(np) {
         "quality": np.quality ? np.quality : 4,
         "price": np.price ? np.price : 15,
         "stock": np.stock ? np.stock : -1,
-        "time_to_life": np.time_to_life ? np.time_to_life : -1,
+        "time_to_live": np.time_to_live ? np.time_to_live : -1,
         "start_of_lifetime": np.start_of_lifetime ? np.start_of_lifetime : -1
     };
     product.uid = parseInt("" + product.product_id + product.quality);
