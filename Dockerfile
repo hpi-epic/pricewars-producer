@@ -8,4 +8,4 @@ ADD . $APP_HOME
 
 RUN npm install
 
-CMD ["node", "app.js"]
+CMD ["./wait-for-it.sh", "kafka:9092", "-t", "0", "--", "node", "app.js"]
