@@ -1,4 +1,4 @@
-var kafka_connection = "vm-mpws2016hp1-05.eaalab.hpi.uni-potsdam.de:9092";
+var kafka_connection = process.env.KAFKA_URL || "vm-mpws2016hp1-05.eaalab.hpi.uni-potsdam.de:9092";
 
 var Kafka = require('no-kafka');
 var producer = new Kafka.Producer({
