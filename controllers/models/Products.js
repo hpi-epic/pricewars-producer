@@ -5,8 +5,6 @@ var aesjs = require("aes-js");
 var public_key = aesjs.util.convertStringToBytes(key);
 var aesEcb = new aesjs.ModeOfOperation.ecb(key);
 
-var Merchants = require("../models/RegisteredMerchants.js");
-
 var Products = {
 
     products :
@@ -220,11 +218,60 @@ var Products = {
     },
 
     GetRandomProduct : function(merchant_id, amount) {
-        var merchant = Merchants.GetRegisteredMerchant(merchant_id);
-        if (!merchant) merchant = Merchants.RegisterMerchant(merchant_id, this.products);
+        if (amount == undefined) amount = 1;
+        let availableProducts = this.GetAvailableProducts(merchant_id, amount);
+        if (availableProducts.length == 0) return undefined;
 
-        var randomProduct = merchant.GetRandomProductFromOwnStock(amount);
-        return randomProduct;
+        let randomProduct = availableProducts[getRandomInt(0, availableProducts.length - 1)];
+
+        return this.prepareProductForBuy(randomProduct, merchant_id);
+    },
+
+    // returns all products that are still available for sell for the given merchant
+    GetAvailableProducts: function(merchant_id, amount) {
+        let result = [];
+        for (let i = 0; i < this.products.length; i++) {
+            let product = this.products[i];
+            product.amount = amount;
+
+            if (product.stock == -1) {
+                result.push(product);
+                continue;
+            }
+
+            // product is limited, check if it's still available
+            if (product.stock > 0 && product.amount <= product.stock) {
+                if (!product.hasOwnProperty("merchant_stock")) product.merchant_stock = {};
+
+                // this merchant has never bought this product before aka he can buy it
+                if (!product.merchant_stock.hasOwnProperty(merchant_id)) {
+                    product.merchant_stock[merchant_id] = product.stock;
+                    result.push(product);
+                    continue;
+                } else if (product.merchant_stock[merchant_id] - product.amount >= 0) {
+                    // the merchant still has enough of this product left in stock
+                    result.push(product);
+                    continue;
+                }
+            }
+        }
+        return result;
+    },
+
+    // prepares a product for buy, ie decreases the amount left in stock for that merchant
+    // and creates a copy of the product that contains only the keys listed as public below (see publicProductBuyAttributes)
+    prepareProductForBuy: function(product, merchant_id) {
+        let cleanProduct = {};
+        for (let key in product) {
+            if (publicProductBuyAttributes.indexOf(key) > -1) {
+                cleanProduct[key] = product[key];
+            }
+        }
+        if (product.stock > 0) {
+            product.merchant_stock[merchant_id] -= product.amount;
+            cleanProduct.left_in_stock = product.merchant_stock[merchant_id];
+        }
+        return cleanProduct;
     },
 
     // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
@@ -288,9 +335,30 @@ var Products = {
     },
 
     GetProducts : function() {
-        return this.products;
+        return cleanUpProducts(this.products);
     }
 };
+
+// list all attributes that should be visible via the GET /products-route
+var publicProductAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "time_to_live", "start_of_lifetime"];
+
+// list all attributes that should be returned on the GET /buy-route
+var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime"];
+
+// creates a copy of the products-list that contains only the keys listed as public above
+function cleanUpProducts(products) {
+    let result = [];
+    for (let i = 0; i < products.length; i++) {
+        let cleanProduct = {};
+        for (let key in products[i]) {
+            if (publicProductAttributes.indexOf(key) > -1) {
+                cleanProduct[key] = products[i][key];
+            }
+        }
+        result.push(cleanProduct);
+    }
+    return result;
+}
 
 function createValidProduct(np) {
     var product = {
