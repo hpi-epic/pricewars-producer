@@ -90,16 +90,24 @@ var appRouter = function(app) {
         })
         .get("/buy", function(req, res) {
             // buy random product
-            if(!req.query.merchant_token) {
-                // console.log("GET Buy random Product called without merchant_id");
+            if (!req.header("authorization")) {
+                //console.log("GET Buy random Product called without merchant_id");
                 return res.status(400).send({
                     "code": 400,
                     "message": "missing the merchant_token",
                     "field" : "merchant_token"
                 });
             } else {
-                var merchant_hash =  KafkaLogger.hashToken(req.query.merchant_token);
-                // console.log("GET Buy random Product called with merchant_ id " + merchant_hash);
+                var merchant_token = req.header("authorization").split(" ");
+                if (merchant_token.length != 2 || merchant_token[0] != "Token") {
+                    return res.status(400).send({
+                        "code": 400,
+                        "message": "missing or unacceptable merchant_token",
+                        "field" : "authorization header"
+                    });
+                }
+                var merchant_hash =  KafkaLogger.hashToken(merchant_token[1]);
+                //console.log("GET Buy random Product called with merchant_ id " + merchant_hash);
 
                 var randomProduct = Products.GetRandomProduct(merchant_hash, 1);
 
