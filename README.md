@@ -1,4 +1,6 @@
-# Price Wars - Producer Component
+# Producer
+
+This repository contains the Producer-component of the Price Wars simulation. The producer represents a warehouse holding products that can be bought by merchants so they can set a price and put them on the marketplace as an offer the consumers can buy.
 
 The meta repository containing general information can be found [here](https://github.com/hpi-epic/masterproject-pricewars).
 
@@ -6,6 +8,46 @@ The meta repository containing general information can be found [here](https://g
 First run ```npm install``` to install necessary dependencies. Then run ```node app.js``` to start the server on port 3000.
 
 Access the server by typing ```http://localhost:3000``` into your browser and use an API-endpoint to test it. You can find the API for the producer here: https://hpi-epic.github.io/masterproject-pricewars/api
+
+## Concept
+The producer exists to abstract from the real world scenario in which merchants have to buy products first to be able to offer them on a marketplace. This step is essential since each purchase of a product costs the merchant money and keeping track of these purchases is necessary to calcualte a merchant's actual profit by comparing the revenue at the marketplace against the expenses at the producer.
+
+### Random Products
+To make sure that the Price Wars simulation is only about the comparison of *pricing* strategies and not about the merchants' *purchase* strategy, we decided that the purchase of a product from the producer is always done randomly. When a merchant requests a product, they are given one random product from the currently available set of products. How many products a merchant buys is not restricted though. 
+
+### Product Signature
+Each purchase is logged to Kafka to keep track of the merchant's expenses. For that the merchant has to send his token in the authorization-header whenever he wants to buy a product. At the same time, the producer generates a signature for the product sold to the merchant that encrypts information about the product itself and also contains the token the merchant sent. This token is later on decrypted and checked by the marketplace whenever a merchant wants to post a new product - if the token in the signature does not match the token the merchant sends, the offer is denied. This way we can make sure that a merchant does not purchase a product with a different token and then puts it on the marketplace with his own token - avoiding any expenses but only making profit. 
+
+### Limited Stock
+The default product set only contains product with infinite availability, i.e. the `stock`-attribute is set to `-1`. In future scenarios we might want products that are limited, ie we only have a certain stock of items available for each merchant such as plane tickets. The current version of the producer does already support this scenario. If the `stock`-attribute is set to a number greater than 0, the producer keeps track of how many instances of this product have been sold to which merchant already. If the left over stock for a product is down to 0 for a merchant, this product won't be sold to this merchant any longer. 
+
+## Architecture
+The components of the producer are the following:
+### app.js 
+The entry point of the Producer. We are using an express-server which is defined here. Also the port used can be adjusted here. 
+
+### routes.js
+All endpoints of the API are defined in here. Adjust this file to add additional endpoints or to update or delete existing ones.
+
+### Products.js 
+Models the actual warehouse and the products being sold. The available products are stored in an array of objects, each object representing a product. 
+
+The current version contains a default product set that can be adjusted via the API. The default set contains 4 different products of each 4 different qualities, so all in all 16 products. 
+
+Accordingly, the Products-prototype exposes methods to add, delete and update products. Furthermore, it offers a method to buy a random product.
+
+This component also takes care of creating an encrypted signature for a sold product. 
+
+### KafkaLogger.js
+This component connects to the Kafka-service and logs each purchase of a merchant to the 'producer'-topic.
+
+### RegisteredMerchants.js
+*This component is currently not in use*
+
+This component models a store of all merchants that are registered at the producer, ie that have already bought a product. With a merchant, the products available to a merchant are stored. It also persistently stores registered merchants on the hard drive through a simple .txt-file.
+
+In the current version, we do not need this component since the information which products are available to which merchant are directly saved with the products themselves. This decision was made to simplify adding, updating and deleting products - if we used this component, each merchant's store would have to be updated with each product-update. 
+
 
 ## Application Overview
 
