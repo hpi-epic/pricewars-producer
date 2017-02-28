@@ -7,7 +7,7 @@ The meta repository containing general information can be found [here](https://g
 ## Installation
 First run ```npm install``` to install necessary dependencies. Then run ```node app.js``` to start the server on port 3000.
 
-Access the server by typing ```http://localhost:3000``` into your browser and use an API-endpoint to test it. You can find the API for the producer here: https://hpi-epic.github.io/masterproject-pricewars/api
+Access the server by typing ```http://localhost:3000``` into your browser and use an API-endpoint to test it. You can find the API for the producer here: https://hpi-epic.github.io/masterproject-pricewars
 
 ## Concept
 The producer exists to abstract from the real world scenario in which merchants have to buy products first to be able to offer them on a marketplace. This step is essential since each purchase of a product costs the merchant money and keeping track of these purchases is necessary to calcualte a merchant's actual profit by comparing the revenue at the marketplace against the expenses at the producer.
