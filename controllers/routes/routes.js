@@ -6,7 +6,11 @@ var appRouter = function(app) {
     app
         .get("/products", function(req, res) {
             // console.log("GET Products called");
-            return res.status(200).send(Products.GetProducts());
+            if (req.query.showDeleted == 'true') {
+                return res.status(200).send(Products.GetAllProducts());
+            } else {
+                return res.status(200).send(Products.GetExistingProducts());
+            }
         })
         .put("/products", function(req, res) {
             if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {

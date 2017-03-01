@@ -234,6 +234,10 @@ var Products = {
             let product = this.products[i];
             product.amount = amount;
 
+            if (product.hasOwnProperty('deleted') && product.deleted == true) {
+                continue;
+            }
+
             if (product.stock == -1) {
                 result.push(product);
                 continue;
@@ -314,7 +318,8 @@ var Products = {
     DeleteProduct : function(uid) {
         for (var i = 0; i < this.products.length; i++) {
             if (this.products[i].uid === uid) {
-                this.products.splice(i, 1);
+                //this.products.splice(i, 1);
+                this.products[i].deleted = true;
                 return true;
             }
         }
@@ -329,18 +334,34 @@ var Products = {
         if (!existingProduct) {
             this.products.push(newProduct);
             return true;
+        } else if (existingProduct.hasOwnProperty('deleted') && existingProduct.deleted == true) {
+            // product existed once: replace it with new information and remove deleted-flag
+            for (var key in existingProduct) {
+                if (newProduct.hasOwnProperty(key)) {
+                    existingProduct[key] = newProduct[key];
+                } else {
+                    delete existingProduct[key]; // will also remove the deleted-flag
+                }
+            }
+            return true;
         } else {
             return false;
         }
     },
 
-    GetProducts : function() {
+    // returns all available products
+    GetExistingProducts : function() {
+        return cleanUpProducts(filterForExistingProducts(this.products));
+    },
+
+    // returns all products, also the once that have been deleted and are no longer sold
+    GetAllProducts : function() {
         return cleanUpProducts(this.products);
     }
 };
 
 // list all attributes that should be visible via the GET /products-route
-var publicProductAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "time_to_live", "start_of_lifetime"];
+var publicProductAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "time_to_live", "start_of_lifetime", "deleted"];
 
 // list all attributes that should be returned on the GET /buy-route
 var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime"];
@@ -356,6 +377,16 @@ function cleanUpProducts(products) {
             }
         }
         result.push(cleanProduct);
+    }
+    return result;
+}
+
+function filterForExistingProducts(products) {
+    let result = [];
+    for (let i = 0; i < products.length; i++) {
+        if (!products[i].hasOwnProperty('deleted') || products[i].deleted == false) {
+            result.push(products[i]);
+        }
     }
     return result;
 }
