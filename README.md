@@ -48,6 +48,23 @@ This component models a store of all merchants that are registered at the produc
 
 In the current version, we do not need this component since the information which products are available to which merchant are directly saved with the products themselves. This decision was made to simplify adding, updating and deleting products - if we used this component, each merchant's store would have to be updated with each product-update. 
 
+## How-To
+
+### ...add new products
+The producer offers multiple endpoints to add products. All of them can also be found [here](https://hpi-epic.github.io/masterproject-pricewars). If you want to add a great amount of new products at once, do a PUT- or POST-request on the /products-route. The PUT-request completely replaces all products of the producer; the POST-requests only adds products. Both requests can take an array of an arbitrary amount of JSON-objects, where each object represent a new product that will be added to the producer (if it is valid, ie the UID that the product will get as a concatenation of its quality and its product-id does not exist yet).
+
+### ...add new product attributes
+If you want to add new attributes to the products the producer offers, you have to make some small code changes. In `Products.js` you have to extend the `createValidProduct`-function. This function takes an arbitrary object and returns an object that only has the currently valid attributes of a product of the producer. So to add, remove or change attributes, simply change the attributes within this method and add a default-value for each attribute in case it is not provided. 
+
+As an example: To add the attribute `popularity` which is an int and has the default value `1`, modify the `product`-object in the function in the following way:
+```javascript
+var product = {
+  ...
+  "popularity": np.popularity ? np.popularity : 1
+};
+```
+
+To make this new attribute visible on both or either the /products- or /buy-route, also add it to the respective array of attribute-names: `publicProductAttributes` (has all attribuet-names that are visible on the /products-route) and/or `publicProductBuyAttributes` (has all attribute-names that are visible as a merchant on the /buy-route).
 
 ## Application Overview
 
