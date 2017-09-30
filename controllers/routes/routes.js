@@ -98,7 +98,7 @@ var appRouter = function(app) {
                 return res.status(400).send({
                     "code": 400,
                     "message": "missing the merchant_token",
-                    "field" : "merchant_token"
+                    "fields" : "merchant_token"
                 });
             } else {
                 var merchant_token = req.header("authorization").split(" ");
@@ -106,7 +106,7 @@ var appRouter = function(app) {
                     return res.status(400).send({
                         "code": 400,
                         "message": "missing or unacceptable merchant_token",
-                        "field" : "authorization header"
+                        "fields" : "authorization header"
                     });
                 }
                 var merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
