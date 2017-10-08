@@ -110,18 +110,19 @@ var appRouter = function(app) {
                     });
                 }
                 var merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
-                var randomProduct = Products.GetRandomProduct(merchant_hash, parseInt(req.params.amount));
+                var product = Products.GetRandomProduct(merchant_hash, parseInt(req.params.amount));
 
-                if (randomProduct == undefined) {
+                if (product == undefined) {
                     return res.status(410).send({
                         "code": 410,
                         "message": "no items left in stock"
                     });
                 } else {
+                    product.ordering_cost = 20
                     var timeOfBuy = (new Date()).toISOString();
-                    Products.AddEncryption(merchant_hash, randomProduct, timeOfBuy);
-                    KafkaLogger.LogBuy(randomProduct, merchant_hash, timeOfBuy);
-                    return res.status(200).send(randomProduct);
+                    Products.AddEncryption(merchant_hash, product, timeOfBuy);
+                    KafkaLogger.LogBuy(product, merchant_hash, timeOfBuy);
+                    return res.status(200).send(product);
                 }
             }
         })
