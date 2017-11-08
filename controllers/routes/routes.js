@@ -92,7 +92,7 @@ var appRouter = function(app) {
                 });
             }
         })
-        .get("/buy/:amount", function(req, res) {
+        .post("/buy/:amount", function(req, res) {
             // buy random product
             if (!req.header("authorization")) {
                 return res.status(400).send({
