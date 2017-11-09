@@ -100,31 +100,47 @@ var appRouter = function(app) {
                     "message": "missing the merchant_token",
                     "fields" : "merchant_token"
                 });
-            } else {
-                var merchant_token = req.header("authorization").split(" ");
-                if (merchant_token.length != 2 || merchant_token[0] != "Token") {
-                    return res.status(400).send({
-                        "code": 400,
-                        "message": "missing or unacceptable merchant_token",
-                        "fields" : "authorization header"
-                    });
-                }
-                var merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
-                var product = Products.GetRandomProduct(merchant_hash, parseInt(req.params.amount));
+            }
 
-                if (product == undefined) {
-                    return res.status(410).send({
-                        "code": 410,
-                        "message": "no items left in stock"
-                    });
-                } else {
-                    product.ordering_cost = 20
-                    var timeOfBuy = (new Date()).toISOString();
-                    Products.AddEncryption(merchant_hash, product, timeOfBuy);
-                    KafkaLogger.LogBuy(product, merchant_hash, timeOfBuy);
-                    return res.status(200).send(product);
+            var merchant_token = req.header("authorization").split(" ");
+            if (merchant_token.length != 2 || merchant_token[0] != "Token") {
+                return res.status(400).send({
+                    "code": 400,
+                    "message": "missing or unacceptable merchant_token",
+                    "fields" : "authorization header"
+                });
+            }
+
+            var merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
+            var product = Products.GetRandomProduct(merchant_hash, parseInt(req.params.amount));
+            if (product == undefined) {
+                return res.status(410).send({
+                    "code": 410,
+                    "message": "no items left in stock"
+                });
+            }
+            
+            var timeOfBuy = (new Date()).toISOString();
+            Products.AddEncryption(merchant_hash, product, timeOfBuy);
+            KafkaLogger.LogBuy(product, merchant_hash, timeOfBuy);
+            product.ordering_cost = 20
+            
+            var order = {
+                "price": product.price * product.amount,
+                "stock": product.stock,
+                "left_in_stock": product.left_in_stock,
+                "product": {
+                    "uid": product.uid,
+                    "product_id": product.product_id,
+                    "name": product.name,
+                    "quality": product.quality,
+                    "amount": product.amount,
+                    "signature": product.signature,
+                    "time_to_live": product.time_to_live,
+                    "start_of_lifetime": product.start_of_lifetime
                 }
             }
+            return res.status(200).send(order);
         })
         .get("/decryption_key", function(req, res) {
             // todo for later: add check for permission
