@@ -112,6 +112,15 @@ var appRouter = function(app) {
 
             var merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
             var amount = parseInt(req.body.amount);
+
+            if (isNaN(amount)) {
+                return res.status(400).send({
+                    "code": 400,
+                    "message": "missing or unacceptable amount",
+                    "fields" : "amount"
+                });
+            }
+
             var product = Products.GetRandomProduct(merchant_hash, amount);
             if (product == undefined) {
                 return res.status(410).send({
