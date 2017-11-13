@@ -92,8 +92,7 @@ var appRouter = function(app) {
                 });
             }
         })
-        .post("/buy/:amount", function(req, res) {
-            // buy random product
+        .post("/order", function(req, res) {
             if (!req.header("authorization")) {
                 return res.status(400).send({
                     "code": 400,
@@ -112,7 +111,8 @@ var appRouter = function(app) {
             }
 
             var merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
-            var product = Products.GetRandomProduct(merchant_hash, parseInt(req.params.amount));
+            var amount = parseInt(req.body.amount);
+            var product = Products.GetRandomProduct(merchant_hash, amount);
             if (product == undefined) {
                 return res.status(410).send({
                     "code": 410,
