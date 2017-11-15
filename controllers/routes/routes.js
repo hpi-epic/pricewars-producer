@@ -132,7 +132,6 @@ var appRouter = function(app) {
             var timeOfBuy = (new Date()).toISOString();
             Products.AddEncryption(merchant_hash, product, timeOfBuy);
             KafkaLogger.LogBuy(product, merchant_hash, timeOfBuy);
-            product.ordering_cost = 20
             
             var order = {
                 "price": product.price * product.amount,
