@@ -92,7 +92,7 @@ var appRouter = function(app) {
                 });
             }
         })
-        .post("/order", function(req, res) {
+        .post("/orders", function(req, res) {
             if (!req.header("authorization")) {
                 return res.status(400).send({
                     "code": 400,
