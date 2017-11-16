@@ -147,7 +147,7 @@ var appRouter = function(app) {
                     "time_to_live": product.time_to_live,
                     "start_of_lifetime": product.start_of_lifetime
                 }
-            }
+            };
             return res.status(200).send(order);
         })
         .get("/decryption_key", function(req, res) {

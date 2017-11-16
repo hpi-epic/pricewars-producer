@@ -14,6 +14,7 @@ var kafkaLogger = {
         var saleInfo = JSON.parse(JSON.stringify(product));
         saleInfo["merchant_id"] = merchant_hash;
         saleInfo["timestamp"] = timeOfBuy;
+        saleInfo["price"] = product.price * product.amount;
 
         producer.send({
             topic: 'producer',
