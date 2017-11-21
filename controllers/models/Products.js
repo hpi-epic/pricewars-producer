@@ -79,7 +79,7 @@ var Products = {
     GetAvailableProducts: function(merchant_id, amount) {
         let result = [];
         for (let i = 0; i < this.products.length; i++) {
-            let product = this.products[i];
+            let product = Object.assign({}, this.products[i]);
             product.amount = amount;
 
             if (product.hasOwnProperty('deleted') && product.deleted == true) {
@@ -199,35 +199,17 @@ var Products = {
 
     // returns all available products
     GetExistingProducts : function() {
-        return cleanUpProducts(filterForExistingProducts(this.products));
+        return filterForExistingProducts(this.products);
     },
 
     // returns all products, also the once that have been deleted and are no longer sold
     GetAllProducts : function() {
-        return cleanUpProducts(this.products);
+        return this.products;
     }
 };
 
-// list all attributes that should be visible via the GET /products-route
-var publicProductAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "time_to_live", "start_of_lifetime", "deleted"];
-
 // list all attributes that should be returned on the GET /buy-route
 var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime"];
-
-// creates a copy of the products-list that contains only the keys listed as public above
-function cleanUpProducts(products) {
-    let result = [];
-    for (let i = 0; i < products.length; i++) {
-        let cleanProduct = {};
-        for (let key in products[i]) {
-            if (publicProductAttributes.indexOf(key) > -1) {
-                cleanProduct[key] = products[i][key];
-            }
-        }
-        result.push(cleanProduct);
-    }
-    return result;
-}
 
 function filterForExistingProducts(products) {
     let result = [];
