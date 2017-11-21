@@ -134,7 +134,7 @@ var appRouter = function(app) {
             KafkaLogger.LogBuy(product, merchant_hash, timeOfBuy);
             
             var order = {
-                "price": product.price * product.amount,
+                "billing_amount": product.price * product.amount,
                 "stock": product.stock,
                 "left_in_stock": product.left_in_stock,
                 "product": {
