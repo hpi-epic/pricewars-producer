@@ -131,10 +131,9 @@ var appRouter = function(app) {
             
             var timeOfBuy = (new Date()).toISOString();
             Products.AddEncryption(merchant_hash, product, timeOfBuy);
-            KafkaLogger.LogBuy(product, merchant_hash, timeOfBuy);
             
             var order = {
-                "billing_amount": product.price * product.amount,
+                "billing_amount": product.price * product.amount + product.fixed_order_cost,
                 "stock": product.stock,
                 "left_in_stock": product.left_in_stock,
                 "product": {
@@ -148,6 +147,8 @@ var appRouter = function(app) {
                     "start_of_lifetime": product.start_of_lifetime
                 }
             };
+
+            KafkaLogger.LogBuy(order, merchant_hash, timeOfBuy);
             return res.status(200).send(order);
         })
         .get("/decryption_key", function(req, res) {
