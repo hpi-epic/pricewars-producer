@@ -10,10 +10,11 @@ var sha256 = require('js-sha256');
 
 var kafkaLogger = {
 
-    LogBuy: function(order, merchant_hash, timeOfBuy) {
-        var saleInfo = JSON.parse(JSON.stringify(order));
+    LogBuy: function(product, order, merchant_hash, timeOfBuy) {
+        var saleInfo = JSON.parse(JSON.stringify(product));
         saleInfo["merchant_id"] = merchant_hash;
         saleInfo["timestamp"] = timeOfBuy;
+        saleInfo["billing_amount"] = order.billing_amount;
 
         producer.send({
             topic: 'producer',

@@ -148,7 +148,7 @@ var appRouter = function(app) {
                 }
             };
 
-            KafkaLogger.LogBuy(order, merchant_hash, timeOfBuy);
+            KafkaLogger.LogBuy(product, order, merchant_hash, timeOfBuy);
             return res.status(200).send(order);
         })
         .get("/decryption_key", function(req, res) {

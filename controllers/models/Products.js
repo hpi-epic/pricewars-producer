@@ -209,7 +209,7 @@ var Products = {
 };
 
 // list all attributes that should be returned on the GET /buy-route
-var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime"];
+var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime", "fixed_order_cost"];
 
 function filterForExistingProducts(products) {
     let result = [];
