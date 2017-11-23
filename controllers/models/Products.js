@@ -19,7 +19,7 @@ var Products = {
                 stock: -1,
                 time_to_live: -1,
                 start_of_lifetime: -1
-            },
+            }/*,
             {
                 uid: 12,
                 product_id: 1,
@@ -52,7 +52,7 @@ var Products = {
                 stock: -1,
                 time_to_live: -1,
                 start_of_lifetime: -1
-            }
+            }*/
         ],
 
     // returns a product by uid, so a unique product with a specific quality
