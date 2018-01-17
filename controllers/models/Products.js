@@ -146,7 +146,7 @@ var Products = {
         this.products = products;
     },
 
-    SetProduct : function(uid, newProduct) {
+    setProduct(uid, newProduct) {
         for (var i = 0; i < this.products.length; i++) {
             if (this.products[i].uid == uid) {
                 var product = createValidProduct(newProduct);
@@ -222,14 +222,15 @@ function filterForExistingProducts(products) {
 }
 
 function createValidProduct(np) {
-    var product = {
+    let product = {
         "product_id": np.product_id ? np.product_id : "100",
         "name": np.name ? np.name : "Unnamed product",
         "quality": np.quality ? np.quality : 4,
         "price": np.price ? np.price : 15,
         "stock": np.stock ? np.stock : -1,
         "time_to_live": np.time_to_live ? np.time_to_live : -1,
-        "start_of_lifetime": np.start_of_lifetime ? np.start_of_lifetime : -1
+        "start_of_lifetime": np.start_of_lifetime ? np.start_of_lifetime : -1,
+        "fixed_order_cost": np.fixed_order_cost ? np.fixed_order_cost : 0,
     };
     product.uid = parseInt("" + product.product_id + product.quality);
     return product;
