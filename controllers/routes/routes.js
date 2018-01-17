@@ -66,19 +66,12 @@ var appRouter = function(app) {
                     "message": "a product with this uid does not exist"
                 });
             }
-            if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
-                if (Products.SetProduct(parseInt(req.params.uid), req.body[0])) {
-                    return res.status(200).send();
-                } else {
-                    return res.status(404).send({
-                        "code": 404,
-                        "message": "other products than the one with the specified UID would be overwritten",
-                    });
-                }
+            if (Products.setProduct(parseInt(req.params.uid), req.body)) {
+                return res.status(200).send();
             } else {
-                return res.status(406).send({
-                    "code": 406,
-                    "message": "product has to be in the form of an array"
+                return res.status(404).send({
+                    "code": 404,
+                    "message": "other products than the one with the specified UID would be overwritten"
                 });
             }
         })
