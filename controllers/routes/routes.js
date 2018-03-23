@@ -125,8 +125,10 @@ var appRouter = function(app) {
             var timeOfBuy = (new Date()).toISOString();
             Products.AddEncryption(merchant_hash, product, timeOfBuy);
             
-            var order = {
+            const order = {
                 "billing_amount": product.price * product.amount + product.fixed_order_cost,
+                "fixed_cost": product.fixed_order_cost,
+                "unit_price": product.price,
                 "stock": product.stock,
                 "left_in_stock": product.left_in_stock,
                 "product": {
