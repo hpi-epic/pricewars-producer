@@ -15,7 +15,7 @@ var Products = {
                 name: "CD_1",
                 quality: 1,
                 price: 15,
-                fixed_order_cost: 10,
+                fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
                 start_of_lifetime: -1
@@ -26,7 +26,7 @@ var Products = {
                 name: "CD_1",
                 quality: 2,
                 price: 12,
-                fixed_order_cost: 10,
+                fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
                 start_of_lifetime: -1
@@ -37,7 +37,7 @@ var Products = {
                 name: "CD_1",
                 quality: 3,
                 price: 9,
-                fixed_order_cost: 10,
+                fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
                 start_of_lifetime: -1
@@ -48,7 +48,7 @@ var Products = {
                 name: "CD_1",
                 quality: 4,
                 price: 6,
-                fixed_order_cost: 10,
+                fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
                 start_of_lifetime: -1
