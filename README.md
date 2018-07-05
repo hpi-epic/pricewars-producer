@@ -23,6 +23,10 @@ Access the server by typing ```http://localhost:3000``` into your browser and us
 ## Concept
 The producer exists to abstract from the real world scenario in which merchants have to buy products first to be able to offer them on a marketplace. This step is essential since each purchase of a product costs the merchant money and keeping track of these purchases is necessary to calcualte a merchant's actual profit by comparing the revenue at the marketplace against the expenses at the producer.
 
+### Product Quality
+The producer randomly assigns a quality to a sold product. This quality is an integer with 1 being the highest quality possible.
+Roughly as an example, the qualities translate as follows: (i) 1 = 'very good', (ii) 2 = 'good', (iii) 3 = 'fair', and (iv) 4 = 'acceptable'.
+
 ### Random Products
 To make sure that the Price Wars simulation is only about the comparison of *pricing* strategies and not about the merchants' *purchase* strategy, we decided that the purchase of a product from the producer is always done randomly. When a merchant requests a product, they are given one random product from the currently available set of products. How many products a merchant buys is not restricted though. 
 
