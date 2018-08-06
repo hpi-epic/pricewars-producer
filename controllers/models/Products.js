@@ -1,11 +1,11 @@
-var crypto = require('crypto'),
-    key = crypto.randomBytes(16);
+const crypto = require('crypto');
+const key = crypto.randomBytes(16);
 
-var aesjs = require("aes-js");
-var public_key = aesjs.util.convertStringToBytes(key);
-var aesEcb = new aesjs.ModeOfOperation.ecb(key);
+const aesjs = require("aes-js");
+const public_key = aesjs.util.convertStringToBytes(key);
+const aesEcb = new aesjs.ModeOfOperation.ecb(key);
 
-var Products = {
+const Products = {
 
     products :
         [
@@ -128,7 +128,7 @@ var Products = {
 
     // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
     AddEncryption : function(merchant_hash, product, timeOfBuy) {
-        var hash = generateProductSignature(merchant_hash, product, timeOfBuy);
+        const hash = generateProductSignature(merchant_hash, product, timeOfBuy);
         product["signature"] = encrypt(hash);
         return product;
     },
@@ -252,16 +252,9 @@ function generateProductSignature(merchant_hash, product, timeOfBuy) {
     return product.uid + ' ' + amount  + ' ' + merchant_hash + ' ' + timeOfBuy;
 }
 
+// Adds whitespaces to the string until its length is a multiple of 16
 function addWhitespacePadding(text) {
-    while (text.length % 16 != 0 || !powerOf2(text.length / 16)) text += " ";
-    return text;
-}
-
-function powerOf2 (input) {
-    while (input > 1 && input/2 !== 0 && input%2 === 0) {
-        input /= 2;
-    }
-    return input === 1;
+    return text + ' '.repeat((16 - (text.length % 16)) % 16);
 }
 
 module.exports = Products;
