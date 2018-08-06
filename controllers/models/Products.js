@@ -1,9 +1,8 @@
 const crypto = require('crypto');
-const key = crypto.randomBytes(16);
+const secret_key = crypto.randomBytes(16);
 
 const aesjs = require("aes-js");
-const public_key = aesjs.util.convertStringToBytes(key);
-const aesEcb = new aesjs.ModeOfOperation.ecb(key);
+const aesEcb = new aesjs.ModeOfOperation.ecb(secret_key);
 
 const Products = {
 
@@ -132,7 +131,7 @@ const Products = {
     },
 
     GetPublicKey : function() {
-        return  public_key.toString('base64');
+        return secret_key.toString('base64');
     },
 
     SetProducts : function(new_products) {
