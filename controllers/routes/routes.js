@@ -87,7 +87,7 @@ router.route('/products/:uid')
         }
     });
 
-router.post("/orders", function(req, res) {
+router.post('/orders', function(req, res) {
     if (!req.header("authorization")) {
         return res.status(400).send({
             "code": 400,
@@ -149,7 +149,7 @@ router.post("/orders", function(req, res) {
     return res.status(200).send(order);
 });
 
-router.get("/decryption_key", function(req, res) {
+router.get('/decryption_key', function(req, res) {
     // todo for later: add check for permission
     return res.status(200).send({"decryption_key" : Products.GetPublicKey()});
 });
