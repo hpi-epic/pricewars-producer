@@ -82,7 +82,7 @@ const Products = {
             let product = Object.assign({}, this.products[i]);
             product.amount = amount;
 
-            if (product.hasOwnProperty('deleted') && product.deleted == true) {
+            if (product.hasOwnProperty('deleted') && product.deleted === true) {
                 continue;
             }
 
@@ -99,11 +99,9 @@ const Products = {
                 if (!product.merchant_stock.hasOwnProperty(merchant_id)) {
                     product.merchant_stock[merchant_id] = product.stock;
                     result.push(product);
-                    continue;
                 } else if (product.merchant_stock[merchant_id] - product.amount >= 0) {
                     // the merchant still has enough of this product left in stock
                     result.push(product);
-                    continue;
                 }
             }
         }
@@ -127,10 +125,10 @@ const Products = {
     },
 
     // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
-    AddEncryption : function(merchant_hash, product, timeOfBuy) {
-        const hash = generateProductSignature(merchant_hash, product, timeOfBuy);
-        product["signature"] = encrypt(hash);
-        return product;
+    createSignature : function(merchant_hash, product, timeOfBuy) {
+        const text = product.uid + ' ' + product.amount  + ' ' + merchant_hash + ' ' + timeOfBuy;
+        const padded_text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));
+        return aesEcb.encrypt(padded_text).toString('base64');
     },
 
     GetPublicKey : function() {
@@ -239,17 +237,6 @@ function createValidProduct(np) {
 // returns a random int (range including min and max)
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function encrypt(text){
-    text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));
-    var cipher = aesEcb.encrypt(text);
-    return cipher.toString('base64');
-}
-
-function generateProductSignature(merchant_hash, product, timeOfBuy) {
-    var amount = product.amount == undefined ? 1 : product.amount;
-    return product.uid + ' ' + amount  + ' ' + merchant_hash + ' ' + timeOfBuy;
 }
 
 // Adds whitespaces to the string until its length is a multiple of 16

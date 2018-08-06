@@ -123,7 +123,6 @@ var appRouter = function(app) {
             }
             
             var timeOfBuy = (new Date()).toISOString();
-            Products.AddEncryption(merchant_hash, product, timeOfBuy);
             
             const order = {
                 "billing_amount": product.price * product.amount + product.fixed_order_cost,
@@ -137,7 +136,7 @@ var appRouter = function(app) {
                     "name": product.name,
                     "quality": product.quality,
                     "amount": product.amount,
-                    "signature": product.signature,
+                    "signature": Products.createSignature(merchant_hash, product, timeOfBuy),
                     "time_to_live": product.time_to_live,
                     "start_of_lifetime": product.start_of_lifetime
                 }
