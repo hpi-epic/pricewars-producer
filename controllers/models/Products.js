@@ -17,7 +17,8 @@ const Products = {
                 fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
-                start_of_lifetime: -1
+                start_of_lifetime: -1,
+                deleted: false
             },
             {
                 uid: 12,
@@ -28,7 +29,8 @@ const Products = {
                 fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
-                start_of_lifetime: -1
+                start_of_lifetime: -1,
+                deleted: false
             },
             {
                 uid: 13,
@@ -39,7 +41,8 @@ const Products = {
                 fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
-                start_of_lifetime: -1
+                start_of_lifetime: -1,
+                deleted: false
             },
             {
                 uid: 14,
@@ -50,7 +53,8 @@ const Products = {
                 fixed_order_cost: 0,
                 stock: -1,
                 time_to_live: -1,
-                start_of_lifetime: -1
+                start_of_lifetime: -1,
+                deleted: false
             }
         ],
 
@@ -64,23 +68,22 @@ const Products = {
         return undefined;
     },
 
-    GetRandomProduct : function(merchant_id, amount) {
+    getRandomProduct : function(merchant_id, amount) {
         let availableProducts = this.GetAvailableProducts(merchant_id, amount);
-        if (availableProducts.length == 0) return undefined;
+        if (availableProducts.length === 0) return undefined;
 
         let randomProduct = availableProducts[getRandomInt(0, availableProducts.length - 1)];
 
-        return this.prepareProductForBuy(randomProduct, merchant_id);
+        return this.createProduct(randomProduct, merchant_id, amount);
     },
 
     // returns all products that are still available for sell for the given merchant
     GetAvailableProducts: function(merchant_id, amount) {
         let result = [];
         for (let i = 0; i < this.products.length; i++) {
-            let product = Object.assign({}, this.products[i]);
-            product.amount = amount;
+            const product = this.products[i];
 
-            if (product.hasOwnProperty('deleted') && product.deleted === true) {
+            if (product.deleted === true) {
                 continue;
             }
 
@@ -90,14 +93,15 @@ const Products = {
             }
 
             // product is limited, check if it's still available
-            if (product.stock > 0 && product.amount <= product.stock) {
+            if (product.stock > 0 && amount <= product.stock) {
                 if (!product.hasOwnProperty("merchant_stock")) product.merchant_stock = {};
 
                 // this merchant has never bought this product before aka he can buy it
                 if (!product.merchant_stock.hasOwnProperty(merchant_id)) {
                     product.merchant_stock[merchant_id] = product.stock;
-                    result.push(product);
-                } else if (product.merchant_stock[merchant_id] - product.amount >= 0) {
+                }
+
+                if (product.merchant_stock[merchant_id] - amount >= 0) {
                     // the merchant still has enough of this product left in stock
                     result.push(product);
                 }
@@ -107,19 +111,26 @@ const Products = {
     },
 
     // prepares a product for buy, ie decreases the amount left in stock for that merchant
-    // and creates a copy of the product that contains only the keys listed as public below (see publicProductBuyAttributes)
-    prepareProductForBuy: function(product, merchant_id) {
-        let cleanProduct = {};
-        for (let key in product) {
-            if (publicProductBuyAttributes.indexOf(key) > -1) {
-                cleanProduct[key] = product[key];
-            }
+    createProduct: function(product_info, merchant_id, amount) {
+        const product = {
+            'uid': product_info.uid,
+            'product_id': product_info.product_id,
+            'name': product_info.name,
+            'quality': product_info.quality,
+            'price': product_info.price,
+            'stock': product_info.stock,
+            'amount': amount,
+            'time_to_live': product_info.time_to_live,
+            'start_of_lifetime': product_info.start_of_lifetime,
+            'fixed_order_cost': product_info.fixed_order_cost
+        };
+
+        if (product_info.stock > 0) {
+            product_info.merchant_stock[merchant_id] -= product_info.amount;
+            product.left_in_stock = product_info.merchant_stock[merchant_id];
         }
-        if (product.stock > 0) {
-            product.merchant_stock[merchant_id] -= product.amount;
-            cleanProduct.left_in_stock = product.merchant_stock[merchant_id];
-        }
-        return cleanProduct;
+
+        return product;
     },
 
     // generates a encrypted signature for a given product that only the marketplace and producer can read
@@ -178,7 +189,7 @@ const Products = {
         if (!existingProduct) {
             this.products.push(newProduct);
             return true;
-        } else if (existingProduct.hasOwnProperty('deleted') && existingProduct.deleted == true) {
+        } else if (existingProduct.deleted === true) {
             // product existed once: replace it with new information and remove deleted-flag
             for (var key in existingProduct) {
                 if (newProduct.hasOwnProperty(key)) {
@@ -193,29 +204,15 @@ const Products = {
         }
     },
 
-    // returns all available products
-    GetExistingProducts : function() {
-        return filterForExistingProducts(this.products);
+    getExistingProducts : function() {
+        return this.products.filter(product => product.deleted === false);
     },
 
     // returns all products, also the once that have been deleted and are no longer sold
-    GetAllProducts : function() {
+    getAllProducts : function() {
         return this.products;
     }
 };
-
-// list all attributes that should be returned on the GET /buy-route
-var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime", "fixed_order_cost"];
-
-function filterForExistingProducts(products) {
-    let result = [];
-    for (let i = 0; i < products.length; i++) {
-        if (!products[i].hasOwnProperty('deleted') || products[i].deleted == false) {
-            result.push(products[i]);
-        }
-    }
-    return result;
-}
 
 function createValidProduct(np) {
     let product = {

@@ -7,9 +7,9 @@ const router = express.Router();
 router.route('/products')
     .get(function(req, res) {
         if (req.query.showDeleted === 'true') {
-            return res.status(200).send(Products.GetAllProducts());
+            return res.status(200).send(Products.getAllProducts());
         } else {
-            return res.status(200).send(Products.GetExistingProducts());
+            return res.status(200).send(Products.getExistingProducts());
         }
     })
     .put(function(req, res) {
@@ -116,7 +116,7 @@ router.post('/orders', function(req, res) {
         });
     }
 
-    const product = Products.GetRandomProduct(merchant_hash, amount);
+    const product = Products.getRandomProduct(merchant_hash, amount);
     if (product === undefined) {
         return res.status(410).send({
             "code": 410,
