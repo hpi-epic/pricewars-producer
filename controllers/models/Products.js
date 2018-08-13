@@ -65,7 +65,6 @@ const Products = {
     },
 
     GetRandomProduct : function(merchant_id, amount) {
-        if (amount == undefined) amount = 1;
         let availableProducts = this.GetAvailableProducts(merchant_id, amount);
         if (availableProducts.length == 0) return undefined;
 
@@ -123,7 +122,7 @@ const Products = {
         return cleanProduct;
     },
 
-    // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
+    // generates a encrypted signature for a given product that only the marketplace and producer can read
     createSignature : function(merchant_hash, product, timeOfBuy) {
         const text = product.uid + ' ' + product.amount  + ' ' + merchant_hash + ' ' + timeOfBuy;
         const padded_text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));

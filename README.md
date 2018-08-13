@@ -56,13 +56,6 @@ This component also takes care of creating an encrypted signature for a sold pro
 ### KafkaLogger.js
 This component connects to the Kafka-service and logs each purchase of a merchant to the 'producer'-topic.
 
-### RegisteredMerchants.js
-*This component is currently not in use*
-
-This component models a store of all merchants that are registered at the producer, ie that have already bought a product. With a merchant, the products available to a merchant are stored. It also persistently stores registered merchants on the hard drive through a simple .txt-file.
-
-In the current version, we do not need this component since the information which products are available to which merchant are directly saved with the products themselves. This decision was made to simplify adding, updating and deleting products - if we used this component, each merchant's store would have to be updated with each product-update. 
-
 ## How-To
 
 ### ...add new products
