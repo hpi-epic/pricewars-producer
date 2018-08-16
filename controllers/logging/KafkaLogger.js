@@ -10,22 +10,25 @@ var sha256 = require('js-sha256');
 
 var kafkaLogger = {
 
-    LogBuy: function(product, order, merchant_hash, timeOfBuy) {
-        const saleInfo = Object.assign({}, product);
-        saleInfo["merchant_id"] = merchant_hash;
-        saleInfo["timestamp"] = timeOfBuy;
-        saleInfo["billing_amount"] = order.billing_amount;
+    LogBuy: function(order, merchantId, timeOfBuy) {
+        const orderInfo = Object.assign({}, order.product);
+        orderInfo.fixed_order_cost = order.fixed_cost;
+        orderInfo.stock = order.stock;
+        orderInfo.price = order.unit_price;
+        orderInfo.merchant_id = merchantId;
+        orderInfo.timestamp = timeOfBuy;
+        orderInfo.billing_amount = order.billing_amount;
 
         producer.send({
             topic: 'producer',
             partition: 0,
             message: {
-                value: JSON.stringify(saleInfo)
+                value: JSON.stringify(orderInfo)
             }
         });
     },
 
-    hashToken: function(token) {
+    merchantId: function(token) {
         return new Buffer(sha256(token), 'hex').toString('base64');
     }
 

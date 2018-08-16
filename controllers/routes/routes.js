@@ -6,15 +6,11 @@ const router = express.Router();
 
 router.route('/products')
     .get(function(req, res) {
-        if (req.query.showDeleted === 'true') {
-            return res.status(200).send(Products.getAllProducts());
-        } else {
-            return res.status(200).send(Products.getExistingProducts());
-        }
+        return res.status(200).send(Products.getAllProducts());
     })
     .put(function(req, res) {
         if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
-            Products.SetProducts(req.body);
+            Products.setProducts(req.body);
             return res.status(200).send();
         } else {
             return res.status(406).send({
@@ -26,7 +22,7 @@ router.route('/products')
     .post(function(req, res) {
         if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
             for (let i = 0; i < req.body.length; i++) {
-                if (!Products.AddProduct(req.body[i])) {
+                if (!Products.addProduct(req.body[i])) {
                     return res.status(406).send({
                         "code": 406,
                         "message": "the product with this product_id and quality already exists"
@@ -35,7 +31,7 @@ router.route('/products')
             }
             return res.status(200).send();
         } else {
-            if (Products.AddProduct(req.body)) {
+            if (Products.addProduct(req.body)) {
                 return res.status(200).send();
             } else {
                 return res.status(406).send({
@@ -49,7 +45,7 @@ router.route('/products')
 router.route('/products/:uid')
     .get(function(req, res) {
         // get specific product information
-        const product = Products.GetProductByUID(parseInt(req.params.uid));
+        const product = Products.getProductInfo(parseInt(req.params.uid));
         if (product !== undefined) {
             return res.status(200).send([product]);
         } else {
@@ -61,13 +57,13 @@ router.route('/products/:uid')
         }
     })
     .put(function(req, res) {
-        if (Products.GetProductByUID(parseInt(req.params.uid)) == null) {
+        if (Products.getProductInfo(parseInt(req.params.uid)) == null) {
             return res.status(404).send({
                 "code": 404,
                 "message": "a product with this uid does not exist"
             });
         }
-        if (Products.setProduct(parseInt(req.params.uid), req.body)) {
+        if (Products.updateProductInfo(parseInt(req.params.uid), req.body)) {
             return res.status(200).send();
         } else {
             return res.status(404).send({
@@ -77,7 +73,7 @@ router.route('/products/:uid')
         }
     })
     .delete(function(req, res) {
-        if (Products.DeleteProduct(parseInt(req.params.uid))) {
+        if (Products.deleteProductQuality(parseInt(req.params.uid))) {
             return res.status(200).send();
         } else {
             return res.status(404).send({
@@ -105,7 +101,6 @@ router.post('/orders', function(req, res) {
         });
     }
 
-    const merchant_hash = KafkaLogger.hashToken(merchant_token[1]);
     const amount = parseInt(req.body.amount);
 
     if (isNaN(amount)) {
@@ -116,42 +111,24 @@ router.post('/orders', function(req, res) {
         });
     }
 
-    const product = Products.getRandomProduct(merchant_hash, amount);
-    if (product === undefined) {
+    const merchantId = KafkaLogger.merchantId(merchant_token[1]);
+    const timeOfBuy = (new Date()).toISOString();
+    const order = Products.orderRandomProduct(merchantId, amount, timeOfBuy);
+
+    if (order === undefined) {
         return res.status(410).send({
             "code": 410,
             "message": "no items left in stock"
         });
     }
 
-    const timeOfBuy = (new Date()).toISOString();
-    product.signature = Products.createSignature(merchant_hash, product, timeOfBuy);
-
-    const order = {
-        "billing_amount": product.price * product.amount + product.fixed_order_cost,
-        "fixed_cost": product.fixed_order_cost,
-        "unit_price": product.price,
-        "stock": product.stock,
-        "left_in_stock": product.left_in_stock,
-        "product": {
-            "uid": product.uid,
-            "product_id": product.product_id,
-            "name": product.name,
-            "quality": product.quality,
-            "amount": product.amount,
-            "signature": product.signature,
-            "time_to_live": product.time_to_live,
-            "start_of_lifetime": product.start_of_lifetime
-        }
-    };
-
-    KafkaLogger.LogBuy(product, order, merchant_hash, timeOfBuy);
+    KafkaLogger.LogBuy(order, merchantId, timeOfBuy);
     return res.status(200).send(order);
 });
 
 router.get('/decryption_key', function(req, res) {
     // todo for later: add check for permission
-    return res.status(200).send({"decryption_key" : Products.GetPublicKey()});
+    return res.status(200).send({"decryption_key" : Products.getSecretKey()});
 });
 
 module.exports = router;

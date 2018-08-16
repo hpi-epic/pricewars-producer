@@ -1,4 +1,4 @@
-FROM node:6
+FROM node:8
 
 ENV APP_HOME /producer
 RUN mkdir $APP_HOME
