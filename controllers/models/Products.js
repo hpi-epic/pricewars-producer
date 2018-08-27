@@ -18,7 +18,6 @@ const Products = {
             stock: -1,
             time_to_live: -1,
             start_of_lifetime: -1,
-            merchant_stock: {},
             qualities: new Set([
                 allQualities.veryGood,
                 allQualities.good,
@@ -28,9 +27,10 @@ const Products = {
         }
     },
 
+    remaining_stock: {},
+
     // returns a product by uid, so a unique product with a specific quality
     getProductInfo(product_id) {
-        //TODO: this used to be UID -> specific product
         return this.productsInfo[product_id]
     },
 
@@ -43,12 +43,17 @@ const Products = {
         // Stock is unlimited
         if (productInfo.stock === -1) return true;
 
+        if (!this.remaining_stock.hasOwnProperty(productInfo.product_id)) {
+            this.remaining_stock[productInfo.product_id] = {};
+        }
+
         // product is limited, check if it's still available
-        if (productInfo.merchant_stock.hasOwnProperty(merchantId) && productInfo.merchant_stock[merchantId] >= amount) {
+        if (this.remaining_stock[productInfo.product_id].hasOwnProperty(merchantId)
+            && this.remaining_stock[productInfo.product_id][merchantId] >= amount) {
             return true;
         }
         // If merchant hasn't bought this product before, his personal available stock equals productInfo.stock
-        return !productInfo.merchant_stock.hasOwnProperty(merchantId) && productInfo.stock >= amount;
+        return !this.remaining_stock[productInfo.product_id].hasOwnProperty(merchantId) && productInfo.stock >= amount;
     },
 
     // If enough items in stock, it reduces the stock and returns the number of items left in stock.
@@ -57,13 +62,17 @@ const Products = {
         // stock is unlimited
         if (productInfo.stock === -1) return productInfo.stock;
 
-        // The merchant has never bought this product if he does not appear in merchant_stock
-        if (!productInfo.merchant_stock.hasOwnProperty(merchantId)) {
-            productInfo.merchant_stock[merchantId] = productInfo.stock;
+        if (!this.remaining_stock.hasOwnProperty(productInfo.product_id)) {
+            this.remaining_stock[productInfo.product_id] = {};
         }
 
-        if (productInfo.merchant_stock[merchantId] >= amount) {
-            productInfo.merchant_stock[merchantId] -= amount;
+        // The merchant has never bought this product if he does not appear in remaining_stock
+        if (!this.remaining_stock[productInfo.product_id].hasOwnProperty(merchantId)) {
+            this.remaining_stock[productInfo.product_id][merchantId] = productInfo.stock;
+        }
+
+        if (this.remaining_stock[productInfo.product_id][merchantId] >= amount) {
+            this.remaining_stock[productInfo.product_id][merchantId] -= amount;
             return productInfo.stock;
         }
         return undefined;
@@ -121,6 +130,7 @@ const Products = {
 
     orderRandomProduct(merchantId, amount, timeOfBuy) {
         const availableProducts = this.getAvailableProducts(merchantId, amount);
+        if (availableProducts.length === 0) return undefined;
         const randomProductId = randomChoice(availableProducts).product_id;
         return this.orderProduct(merchantId, amount, timeOfBuy, randomProductId);
     },
