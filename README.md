@@ -63,15 +63,3 @@ The producer offers multiple endpoints to add products. All of them can also be 
 
 ### ...add new product attributes
 If you want to add new attributes to the products the producer offers, you have to make some small code changes. In `Products.js` you have to extend the `createValidProduct`-function. This function takes an arbitrary object and returns an object that only has the currently valid attributes of a product of the producer. So to add, remove or change attributes, simply change the attributes within this method and add a default-value for each attribute in case it is not provided. 
-
-As an example: To add the attribute `popularity` which is an int and has the default value `1`, modify the `product`-object in the function in the following way:
-```javascript
-var product = {
-  ...
-  "popularity": np.popularity ? np.popularity : 1
-};
-```
-
-To make this new attribute visible on both or either the /products- or /buy-route, also add it to the respective array of attribute-names: `publicProductAttributes` (has all attribuet-names that are visible on the /products-route) and/or `publicProductBuyAttributes` (has all attribute-names that are visible as a merchant on the /buy-route).
-
-

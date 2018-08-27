@@ -11,7 +11,6 @@ const Products = {
     // This is a mapping from product id to product info
     productsInfo: {
         1: {
-            //TODO: can I remove redundant product id?
             product_id: 1,
             name: 'CD_1',
             price: 15,
@@ -73,7 +72,6 @@ const Products = {
     // generates an encrypted signature for a given product that only the marketplace and producer can read
     createSignature(merchantId, uid, amount, timeOfBuy) {
         const text = uid + ' ' + amount  + ' ' + merchantId + ' ' + timeOfBuy;
-        console.log('signature ' + text);
         const padded_text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));
         return aesEcb.encrypt(padded_text).toString('base64');
     },
@@ -127,22 +125,30 @@ const Products = {
         return this.orderProduct(merchantId, amount, timeOfBuy, randomProductId);
     },
 
-    orderProduct(merchantId, amount, timeOfBuy, productId) {
+    orderProduct(merchantId, totalAmount, timeOfBuy, productId) {
         const productInfo = this.productsInfo[productId];
         if (productInfo === undefined) return undefined;
-        //TODO: for now single quality, get multiple qualities
-        const quality = randomChoice(Array.from(productInfo.qualities));
-        const uid = parseInt("" + productInfo.product_id + quality);
-        const leftInStock = this.reduceStock(productInfo, merchantId, amount);
+        const leftInStock = this.reduceStock(productInfo, merchantId, totalAmount);
         if (leftInStock === undefined) return undefined;
 
-        return {
-            billing_amount: productInfo.price * amount + productInfo.fixed_order_cost,
+        // Draw random qualities from available qualities
+        const qualityAmounts = countOccurrences(randomChoices(Array.from(productInfo.qualities), totalAmount));
+
+        const order = {
+            product_id: productId,
+            product_name: productInfo.name,
+            billing_amount: productInfo.price * totalAmount + productInfo.fixed_order_cost,
             fixed_cost: productInfo.fixed_order_cost,
             unit_price: productInfo.price,
             stock: productInfo.stock,
             left_in_stock: leftInStock,
-            product: {
+            products: []
+        };
+
+        for (const [key, amount] of Object.entries(qualityAmounts)) {
+            const quality = parseInt(key);
+            const uid = parseInt("" + productInfo.product_id + quality);
+            order.products.push({
                 uid: uid,
                 product_id: productInfo.product_id,
                 name: productInfo.name,
@@ -151,14 +157,38 @@ const Products = {
                 time_to_live: productInfo.time_to_live,
                 start_of_lifetime: productInfo.start_of_lifetime,
                 signature: this.createSignature(merchantId, uid, amount, timeOfBuy)
-            }
-        };
+            });
+        }
+
+        return order;
     }
 };
 
 // Picks a random element from an array
 function randomChoice(values) {
     return values[Math.floor(Math.random() * values.length)];
+}
+
+// Picks multiple random elements from an array. Elements can be picked multiple times.
+function randomChoices(values, number_choices) {
+    const choices = [];
+    for (let i = 0; i < number_choices; i++) {
+        choices.push(randomChoice(values));
+    }
+    return choices;
+}
+
+// Counts occurrences of each value
+function countOccurrences(values) {
+    const occurrences = {};
+    for (let i = 0; i < values.length; ++i) {
+        if (occurrences.hasOwnProperty(values[i])) {
+            occurrences[values[i]] += 1;
+        } else {
+            occurrences[values[i]] = 1;
+        }
+    }
+    return occurrences;
 }
 
 // Adds whitespaces to the string until its length is a multiple of 16
