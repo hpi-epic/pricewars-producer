@@ -42,33 +42,26 @@ router.route('/products')
         }
     });
 
-router.route('/products/:uid')
+router.route('/products/:id')
     .get(function(req, res) {
-        // get specific product information
-        const product = Products.getProductInfo(parseInt(req.params.uid));
+        const product = Products.getProductInfo(parseInt(req.params.id));
         if (product !== undefined) {
-            return res.status(200).send([product]);
+            return res.status(200).send(product);
         } else {
             return res.status(404).send({
                 "code": 404,
-                "message": "this product does not exist for this producer",
-                "fields": "uid"
+                "message": "A product with this id does not exist",
+                "fields": "id"
             });
         }
     })
     .put(function(req, res) {
-        if (Products.getProductInfo(parseInt(req.params.uid)) == null) {
-            return res.status(404).send({
-                "code": 404,
-                "message": "a product with this uid does not exist"
-            });
-        }
         if (Products.updateProductInfo(parseInt(req.params.uid), req.body)) {
             return res.status(200).send();
         } else {
             return res.status(404).send({
                 "code": 404,
-                "message": "other products than the one with the specified UID would be overwritten"
+                "message": "A product with this id does not exist"
             });
         }
     })

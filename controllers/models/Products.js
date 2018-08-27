@@ -34,6 +34,10 @@ const Products = {
         return this.productsInfo[product_id]
     },
 
+    getAllProducts() {
+        return Object.values(this.productsInfo);
+    },
+
     // returns all products that are still available for sell for the given merchant
     getAvailableProducts(merchantId, amount) {
         return Object.values(this.productsInfo).filter(productInfo => this.hasEnoughStock(productInfo, merchantId, amount));
@@ -122,10 +126,6 @@ const Products = {
         if (this.productsInfo[newProduct.product_id] !== undefined) return false;
         this.productsInfo[newProduct.product_id] = newProduct;
         return true;
-    },
-
-    getAllProducts() {
-        return this.productsInfo;
     },
 
     orderRandomProduct(merchantId, amount, timeOfBuy) {
