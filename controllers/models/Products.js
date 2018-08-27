@@ -13,7 +13,7 @@ const Products = {
         1: {
             product_id: 1,
             name: 'CD_1',
-            price: 15,
+            unit_price: 15,
             fixed_order_cost: 0,
             stock: -1,
             time_to_live: -1,
@@ -147,9 +147,9 @@ const Products = {
         const order = {
             product_id: productId,
             product_name: productInfo.name,
-            billing_amount: productInfo.price * totalAmount + productInfo.fixed_order_cost,
+            billing_amount: productInfo.unit_price * totalAmount + productInfo.fixed_order_cost,
             fixed_cost: productInfo.fixed_order_cost,
-            unit_price: productInfo.price,
+            unit_price: productInfo.unit_price,
             stock: productInfo.stock,
             left_in_stock: leftInStock,
             products: []
