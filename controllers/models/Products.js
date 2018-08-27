@@ -29,13 +29,15 @@ const Products = {
 
     remaining_stock: {},
 
-    // returns a product by uid, so a unique product with a specific quality
-    getProductInfo(product_id) {
-        return this.productsInfo[product_id]
+    getProductInfo(productId) {
+        const productInfo = Object.assign({}, this.productsInfo[productId]);
+        // Change the set of qualities to an array because we cannot send sets via JSON
+        productInfo.qualities = Array.from(productInfo.qualities);
+        return productInfo;
     },
 
-    getAllProducts() {
-        return Object.values(this.productsInfo);
+    getAllProductsInfo() {
+        return Object.keys(this.productsInfo).map(productId => this.getProductInfo(productId));
     },
 
     // returns all products that are still available for sell for the given merchant

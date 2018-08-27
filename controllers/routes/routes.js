@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.route('/products')
     .get(function(req, res) {
-        return res.status(200).send(Products.getAllProducts());
+        return res.status(200).send(Products.getAllProductsInfo());
     })
     .put(function(req, res) {
         if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
@@ -44,9 +44,9 @@ router.route('/products')
 
 router.route('/products/:id')
     .get(function(req, res) {
-        const product = Products.getProductInfo(parseInt(req.params.id));
-        if (product !== undefined) {
-            return res.status(200).send(product);
+        const productInfo = Products.getProductInfo(parseInt(req.params.id));
+        if (productInfo !== undefined) {
+            return res.status(200).send(productInfo);
         } else {
             return res.status(404).send({
                 "code": 404,
