@@ -8,37 +8,14 @@ router.route('/products')
     .get(function(req, res) {
         return res.status(200).send(Products.getAllProductsInfo());
     })
-    .put(function(req, res) {
-        if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
-            Products.setProducts(req.body);
+    .post(function(req, res) {
+        if (Products.addProductInfo(req.body)) {
             return res.status(200).send();
         } else {
             return res.status(406).send({
                 "code": 406,
-                "message": "products have to be in the form of an array"
+                "message": "A product with this id already exists"
             });
-        }
-    })
-    .post(function(req, res) {
-        if (Object.prototype.toString.call( req.body ) === '[object Array]' ) {
-            for (let i = 0; i < req.body.length; i++) {
-                if (!Products.addProduct(req.body[i])) {
-                    return res.status(406).send({
-                        "code": 406,
-                        "message": "the product with this product_id and quality already exists"
-                    });
-                }
-            }
-            return res.status(200).send();
-        } else {
-            if (Products.addProduct(req.body)) {
-                return res.status(200).send();
-            } else {
-                return res.status(406).send({
-                    "code": 406,
-                    "message": "the product with this product_id and quality already exists"
-                });
-            }
         }
     });
 
@@ -56,7 +33,7 @@ router.route('/products/:id')
         }
     })
     .put(function(req, res) {
-        if (Products.updateProductInfo(parseInt(req.params.uid), req.body)) {
+        if (Products.updateProductInfo(parseInt(req.params.id), req.body)) {
             return res.status(200).send();
         } else {
             return res.status(404).send({
@@ -66,12 +43,12 @@ router.route('/products/:id')
         }
     })
     .delete(function(req, res) {
-        if (Products.deleteProductQuality(parseInt(req.params.uid))) {
+        if (Products.deleteProductInfo(parseInt(req.params.id))) {
             return res.status(200).send();
         } else {
             return res.status(404).send({
                 "code": 404,
-                "message": "this product does not exist for this producer",
+                "message": "Product with this id does not exist",
             });
         }
     });

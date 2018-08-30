@@ -27,6 +27,9 @@ const Products = {
         }
     },
 
+    // Each merchant has a certain stock of each product. If remaining_stock does not contain an entry for a specific
+    // product and merchant, that merchant has a stock as indicated in the corresponding product info.
+    // A stock of -1 means unlimited stock.
     remaining_stock: {},
 
     getProductInfo(productId) {
@@ -95,36 +98,21 @@ const Products = {
         return secret_key.toString('base64');
     },
 
-    setProducts(newProductsInfo) {
-        //TODO: marketplace sends proper format
-        //TODO: validate input
-        this.productsInfo = newProductsInfo;
-    },
-
-    updateProductInfo(uid, newProduct) {
-        //TODO: marketplace sends proper format
-        //TODO: validate input
-        if (this.productsInfo[newProduct.product_id] === undefined) return false;
-        this.productsInfo[newProduct.product_id] = newProduct;
+    updateProductInfo(id, newProduct) {
+        if (id !== newProduct.product_id) return false;
+        if (this.productsInfo[id] === undefined) return false;
+        this.productsInfo[id] = newProduct;
         return true;
     },
 
-    deleteProductQuality(uid) {
-        const [productId, quality] = splitToIdAndQuality(uid);
-        const productInfo = this.productsInfo[productId];
-        if (productInfo === undefined) return false;
-        const containedQuality = productInfo.qualities.delete(quality);
-        if (!containedQuality) return false;
-        if (productInfo.qualities.size === 0) {
-            delete this.productsInfo[productId];
-        }
+    deleteProductInfo(id) {
+        delete this.productsInfo[id];
         return true;
     },
 
     // Adds a new product info but does not replace existing ones
-    addProduct(newProduct) {
-        //TODO: marketplace sends proper format
-        //TODO: validate input
+    addProductInfo(newProduct) {
+        console.log(newProduct);
         if (this.productsInfo[newProduct.product_id] !== undefined) return false;
         this.productsInfo[newProduct.product_id] = newProduct;
         return true;
@@ -206,12 +194,6 @@ function countOccurrences(values) {
 // Adds whitespaces to the string until its length is a multiple of 16
 function addWhitespacePadding(text) {
     return text + ' '.repeat((16 - (text.length % 16)) % 16);
-}
-
-function splitToIdAndQuality(uid) {
-    const product_id = uid.toString().slice(0, -1);
-    const quality = uid.toString().slice(-1);
-    return [product_id, quality];
 }
 
 module.exports = Products;
