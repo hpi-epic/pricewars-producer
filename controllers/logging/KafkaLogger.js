@@ -16,7 +16,7 @@ var kafkaLogger = {
             product_id: order.product_id,
             name: order.product_name,
             unit_price: order.unit_price,
-            amount: order.products.reduce((sum, product) => sum + product.amount, 0),
+            quantity: order.products.reduce((sum, product) => sum + product.quantity, 0),
             merchant_id: merchantId,
             fixed_order_cost: order.fixed_cost,
             stock: order.stock,

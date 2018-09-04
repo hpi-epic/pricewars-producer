@@ -71,19 +71,19 @@ router.post('/orders', function(req, res) {
         });
     }
 
-    const amount = parseInt(req.body.amount);
+    const quantity = parseInt(req.body.quantity);
 
-    if (isNaN(amount)) {
+    if (isNaN(quantity)) {
         return res.status(400).send({
             "code": 400,
-            "message": "missing or unacceptable amount",
-            "fields" : "amount"
+            "message": "missing or unacceptable quantity",
+            "fields" : "quantity"
         });
     }
 
     const merchantId = KafkaLogger.merchantId(merchant_token[1]);
     const timeOfBuy = (new Date()).toISOString();
-    const order = Products.orderRandomProduct(merchantId, amount, timeOfBuy);
+    const order = Products.orderRandomProduct(merchantId, quantity, timeOfBuy);
 
     if (order === undefined) {
         return res.status(410).send({
