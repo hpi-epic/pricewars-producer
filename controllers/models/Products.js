@@ -1,8 +1,8 @@
 const crypto = require('crypto');
-const secret_key = crypto.randomBytes(16);
+const secretKey = crypto.randomBytes(16);
 
 const aesjs = require("aes-js");
-const aesEcb = new aesjs.ModeOfOperation.ecb(secret_key);
+const aesEcb = new aesjs.ModeOfOperation.ecb(secretKey);
 
 const allQualities = Object.freeze({veryGood: 1, good: 2, fair: 3, acceptable: 4});
 
@@ -11,7 +11,6 @@ const Products = {
     // This is a mapping from product id to product info
     productsInfo: {
         1: {
-            product_id: 1,
             name: 'Product #1',
             unit_price: 15,
             fixed_order_cost: 0,
@@ -33,9 +32,11 @@ const Products = {
     remaining_stock: {},
 
     getProductInfo(productId) {
+        if (this.productsInfo[productId] === undefined) return undefined;
         const productInfo = Object.assign({}, this.productsInfo[productId]);
         // Change the set of qualities to an array because we cannot send sets via JSON
         productInfo.qualities = Array.from(productInfo.qualities);
+        productInfo.product_id = productId;
         return productInfo;
     },
 
@@ -43,45 +44,49 @@ const Products = {
         return Object.keys(this.productsInfo).map(productId => this.getProductInfo(productId));
     },
 
-    // returns all products that are still available for sell for the given merchant
-    getAvailableProducts(merchantId, quantity) {
-        return Object.values(this.productsInfo).filter(productInfo => this.hasEnoughStock(productInfo, merchantId, quantity));
+    // returns ids of all products with enough stock for a given merchant and order quantity
+    getAvailableProductIds(merchantId, quantity) {
+        return Object.keys(this.productsInfo)
+            .map(id => parseInt(id))
+            .filter(productId => this.hasEnoughStock(productId, merchantId, quantity));
     },
 
-    hasEnoughStock(productInfo, merchantId, quantity) {
+    hasEnoughStock(productId, merchantId, quantity) {
+        const productInfo = this.productsInfo[productId];
         // Stock is unlimited
         if (productInfo.stock === -1) return true;
 
-        if (!this.remaining_stock.hasOwnProperty(productInfo.product_id)) {
-            this.remaining_stock[productInfo.product_id] = {};
+        if (!this.remaining_stock.hasOwnProperty(productId)) {
+            this.remaining_stock[productId] = {};
         }
 
         // product is limited, check if it's still available
-        if (this.remaining_stock[productInfo.product_id].hasOwnProperty(merchantId)
-            && this.remaining_stock[productInfo.product_id][merchantId] >= quantity) {
+        if (this.remaining_stock[productId].hasOwnProperty(merchantId)
+            && this.remaining_stock[productId][merchantId] >= quantity) {
             return true;
         }
         // If merchant hasn't bought this product before, his personal available stock equals productInfo.stock
-        return !this.remaining_stock[productInfo.product_id].hasOwnProperty(merchantId) && productInfo.stock >= quantity;
+        return !this.remaining_stock[productId].hasOwnProperty(merchantId) && productInfo.stock >= quantity;
     },
 
     // If enough items in stock, it reduces the stock and returns the number of items left in stock.
     // Otherwise, it returns undefined.
-    reduceStock(productInfo, merchantId, quantity) {
+    reduceStock(productId, merchantId, quantity) {
+        const productInfo = this.productsInfo[productId];
         // stock is unlimited
         if (productInfo.stock === -1) return productInfo.stock;
 
-        if (!this.remaining_stock.hasOwnProperty(productInfo.product_id)) {
-            this.remaining_stock[productInfo.product_id] = {};
+        if (!this.remaining_stock.hasOwnProperty(productId)) {
+            this.remaining_stock[productId] = {};
         }
 
         // The merchant has never bought this product if he does not appear in remaining_stock
-        if (!this.remaining_stock[productInfo.product_id].hasOwnProperty(merchantId)) {
-            this.remaining_stock[productInfo.product_id][merchantId] = productInfo.stock;
+        if (!this.remaining_stock[productId].hasOwnProperty(merchantId)) {
+            this.remaining_stock[productId][merchantId] = productInfo.stock;
         }
 
-        if (this.remaining_stock[productInfo.product_id][merchantId] >= quantity) {
-            this.remaining_stock[productInfo.product_id][merchantId] -= quantity;
+        if (this.remaining_stock[productId][merchantId] >= quantity) {
+            this.remaining_stock[productId][merchantId] -= quantity;
             return productInfo.stock;
         }
         return undefined;
@@ -95,7 +100,7 @@ const Products = {
     },
 
     getSecretKey() {
-        return secret_key.toString('base64');
+        return secretKey.toString('base64');
     },
 
     updateProductInfo(id, newProduct) {
@@ -106,29 +111,28 @@ const Products = {
     },
 
     deleteProductInfo(id) {
+        if (this.productsInfo[id] === undefined) return false;
         delete this.productsInfo[id];
         return true;
     },
 
     // Adds a new product info but does not replace existing ones
     addProductInfo(newProduct) {
-        console.log(newProduct);
         if (this.productsInfo[newProduct.product_id] !== undefined) return false;
         this.productsInfo[newProduct.product_id] = newProduct;
         return true;
     },
 
     orderRandomProduct(merchantId, quantity, timeOfBuy) {
-        const availableProducts = this.getAvailableProducts(merchantId, quantity);
-        if (availableProducts.length === 0) return undefined;
-        const randomProductId = randomChoice(availableProducts).product_id;
+        const availableProductIds = this.getAvailableProductIds(merchantId, quantity);
+        const randomProductId = randomChoice(availableProductIds);
         return this.orderProduct(merchantId, quantity, timeOfBuy, randomProductId);
     },
 
     orderProduct(merchantId, totalQuantity, timeOfBuy, productId) {
         const productInfo = this.productsInfo[productId];
         if (productInfo === undefined) return undefined;
-        const leftInStock = this.reduceStock(productInfo, merchantId, totalQuantity);
+        const leftInStock = this.reduceStock(productId, merchantId, totalQuantity);
         if (leftInStock === undefined) return undefined;
 
         // Draw random qualities from available qualities
@@ -147,10 +151,10 @@ const Products = {
 
         for (const [key, quantity] of Object.entries(qualityQuantities)) {
             const quality = parseInt(key);
-            const uid = parseInt("" + productInfo.product_id + quality);
+            const uid = parseInt("" + productId + quality);
             order.products.push({
                 uid: uid,
-                product_id: productInfo.product_id,
+                product_id: productId,
                 name: productInfo.name,
                 quality: quality,
                 quantity: quantity,
@@ -164,7 +168,7 @@ const Products = {
     }
 };
 
-// Picks a random element from an array
+// Picks a random element from an array. Returns undefined for empty lists
 function randomChoice(values) {
     return values[Math.floor(Math.random() * values.length)];
 }
