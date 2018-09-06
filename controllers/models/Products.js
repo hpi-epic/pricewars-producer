@@ -12,7 +12,7 @@ const Products = {
     productsInfo: {
         1: {
             product_id: 1,
-            name: 'CD_1',
+            name: 'Product #1',
             unit_price: 15,
             fixed_order_cost: 0,
             stock: -1,
