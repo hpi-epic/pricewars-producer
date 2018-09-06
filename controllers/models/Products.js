@@ -104,7 +104,7 @@ const Products = {
     },
 
     updateProductInfo(id, newProduct) {
-        if (id !== newProduct.product_id) return false;
+        if (id !== parseInt(newProduct.product_id)) return false;
         if (this.productsInfo[id] === undefined) return false;
         this.productsInfo[id] = newProduct;
         return true;
