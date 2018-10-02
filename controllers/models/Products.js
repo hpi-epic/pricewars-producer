@@ -1,267 +1,203 @@
-var crypto = require('crypto'),
-    key = crypto.randomBytes(16);
+const crypto = require('crypto');
+const secretKey = crypto.randomBytes(16);
 
-var aesjs = require("aes-js");
-var public_key = aesjs.util.convertStringToBytes(key);
-var aesEcb = new aesjs.ModeOfOperation.ecb(key);
+const aesjs = require("aes-js");
+const aesEcb = new aesjs.ModeOfOperation.ecb(secretKey);
 
-var Products = {
+const allQualities = Object.freeze({veryGood: 1, good: 2, fair: 3, acceptable: 4});
 
-    products :
-        [
-            {
-                uid: 11,
-                product_id: 1,
-                name: "CD_1",
-                quality: 1,
-                price: 15,
-                fixed_order_cost: 0,
-                stock: -1,
-                time_to_live: -1,
-                start_of_lifetime: -1
-            },
-            {
-                uid: 12,
-                product_id: 1,
-                name: "CD_1",
-                quality: 2,
-                price: 12,
-                fixed_order_cost: 0,
-                stock: -1,
-                time_to_live: -1,
-                start_of_lifetime: -1
-            },
-            {
-                uid: 13,
-                product_id: 1,
-                name: "CD_1",
-                quality: 3,
-                price: 9,
-                fixed_order_cost: 0,
-                stock: -1,
-                time_to_live: -1,
-                start_of_lifetime: -1
-            },
-            {
-                uid: 14,
-                product_id: 1,
-                name: "CD_1",
-                quality: 4,
-                price: 6,
-                fixed_order_cost: 0,
-                stock: -1,
-                time_to_live: -1,
-                start_of_lifetime: -1
-            }
-        ],
+const Products = {
 
-    // returns a product by uid, so a unique product with a specific quality
-    GetProductByUID : function (uid) {
-        for (var i = 0; i < this.products.length; i++) {
-            if (this.products[i].uid == uid) {
-                return this.products[i];
-            }
+    // This is a mapping from product id to product info
+    productsInfo: {
+        1: {
+            name: 'Product #1',
+            unit_price: 15,
+            fixed_order_cost: 0,
+            stock: -1,
+            time_to_live: -1,
+            start_of_lifetime: -1,
+            qualities: new Set([
+                allQualities.veryGood,
+                allQualities.good,
+                allQualities.fair,
+                allQualities.acceptable
+            ])
+        }
+    },
+
+    // Each merchant has a certain stock of each product. If remaining_stock does not contain an entry for a specific
+    // product and merchant, that merchant has a stock as indicated in the corresponding product info.
+    // A stock of -1 means unlimited stock.
+    remaining_stock: {},
+
+    getProductInfo(productId) {
+        if (this.productsInfo[productId] === undefined) return undefined;
+        const productInfo = Object.assign({}, this.productsInfo[productId]);
+        // Change the set of qualities to an array because we cannot send sets via JSON
+        productInfo.qualities = Array.from(productInfo.qualities);
+        productInfo.product_id = productId;
+        return productInfo;
+    },
+
+    getAllProductsInfo() {
+        return Object.keys(this.productsInfo).map(productId => this.getProductInfo(productId));
+    },
+
+    // returns ids of all products with enough stock for a given merchant and order quantity
+    getAvailableProductIds(merchantId, quantity) {
+        return Object.keys(this.productsInfo)
+            .map(id => parseInt(id))
+            .filter(productId => this.hasEnoughStock(productId, merchantId, quantity));
+    },
+
+    hasEnoughStock(productId, merchantId, quantity) {
+        const productInfo = this.productsInfo[productId];
+        // Stock is unlimited
+        if (productInfo.stock === -1) return true;
+
+        if (!this.remaining_stock.hasOwnProperty(productId)) {
+            this.remaining_stock[productId] = {};
+        }
+
+        // product is limited, check if it's still available
+        if (this.remaining_stock[productId].hasOwnProperty(merchantId)
+            && this.remaining_stock[productId][merchantId] >= quantity) {
+            return true;
+        }
+        // If merchant hasn't bought this product before, his personal available stock equals productInfo.stock
+        return !this.remaining_stock[productId].hasOwnProperty(merchantId) && productInfo.stock >= quantity;
+    },
+
+    // If enough items in stock, it reduces the stock and returns the number of items left in stock.
+    // Otherwise, it returns undefined.
+    reduceStock(productId, merchantId, quantity) {
+        const productInfo = this.productsInfo[productId];
+        // stock is unlimited
+        if (productInfo.stock === -1) return productInfo.stock;
+
+        if (!this.remaining_stock.hasOwnProperty(productId)) {
+            this.remaining_stock[productId] = {};
+        }
+
+        // The merchant has never bought this product if he does not appear in remaining_stock
+        if (!this.remaining_stock[productId].hasOwnProperty(merchantId)) {
+            this.remaining_stock[productId][merchantId] = productInfo.stock;
+        }
+
+        if (this.remaining_stock[productId][merchantId] >= quantity) {
+            this.remaining_stock[productId][merchantId] -= quantity;
+            return productInfo.stock;
         }
         return undefined;
     },
 
-    GetRandomProduct : function(merchant_id, amount) {
-        if (amount == undefined) amount = 1;
-        let availableProducts = this.GetAvailableProducts(merchant_id, amount);
-        if (availableProducts.length == 0) return undefined;
-
-        let randomProduct = availableProducts[getRandomInt(0, availableProducts.length - 1)];
-
-        return this.prepareProductForBuy(randomProduct, merchant_id);
+    // generates an encrypted signature for a given product that only the marketplace and producer can read
+    createSignature(merchantId, uid, quantity, timeOfBuy) {
+        const text = uid + ' ' + quantity  + ' ' + merchantId + ' ' + timeOfBuy;
+        const padded_text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));
+        return aesEcb.encrypt(padded_text).toString('base64');
     },
 
-    // returns all products that are still available for sell for the given merchant
-    GetAvailableProducts: function(merchant_id, amount) {
-        let result = [];
-        for (let i = 0; i < this.products.length; i++) {
-            let product = Object.assign({}, this.products[i]);
-            product.amount = amount;
+    getSecretKey() {
+        return secretKey.toString('base64');
+    },
 
-            if (product.hasOwnProperty('deleted') && product.deleted == true) {
-                continue;
-            }
+    updateProductInfo(id, newProduct) {
+        if (id !== parseInt(newProduct.product_id)) return false;
+        if (this.productsInfo[id] === undefined) return false;
+        this.productsInfo[id] = newProduct;
+        return true;
+    },
 
-            if (product.stock == -1) {
-                result.push(product);
-                continue;
-            }
+    deleteProductInfo(id) {
+        if (this.productsInfo[id] === undefined) return false;
+        delete this.productsInfo[id];
+        return true;
+    },
 
-            // product is limited, check if it's still available
-            if (product.stock > 0 && product.amount <= product.stock) {
-                if (!product.hasOwnProperty("merchant_stock")) product.merchant_stock = {};
+    // Adds a new product info but does not replace existing ones
+    addProductInfo(newProduct) {
+        if (this.productsInfo[newProduct.product_id] !== undefined) return false;
+        this.productsInfo[newProduct.product_id] = newProduct;
+        return true;
+    },
 
-                // this merchant has never bought this product before aka he can buy it
-                if (!product.merchant_stock.hasOwnProperty(merchant_id)) {
-                    product.merchant_stock[merchant_id] = product.stock;
-                    result.push(product);
-                    continue;
-                } else if (product.merchant_stock[merchant_id] - product.amount >= 0) {
-                    // the merchant still has enough of this product left in stock
-                    result.push(product);
-                    continue;
-                }
-            }
+    orderRandomProduct(merchantId, quantity, timeOfBuy) {
+        const availableProductIds = this.getAvailableProductIds(merchantId, quantity);
+        const randomProductId = randomChoice(availableProductIds);
+        return this.orderProduct(merchantId, quantity, timeOfBuy, randomProductId);
+    },
+
+    orderProduct(merchantId, totalQuantity, timeOfBuy, productId) {
+        const productInfo = this.productsInfo[productId];
+        if (productInfo === undefined) return undefined;
+        const leftInStock = this.reduceStock(productId, merchantId, totalQuantity);
+        if (leftInStock === undefined) return undefined;
+
+        // Draw random qualities from available qualities
+        const qualityQuantities = countOccurrences(randomChoices(Array.from(productInfo.qualities), totalQuantity));
+
+        const order = {
+            product_id: productId,
+            product_name: productInfo.name,
+            billing_amount: productInfo.unit_price * totalQuantity + productInfo.fixed_order_cost,
+            fixed_cost: productInfo.fixed_order_cost,
+            unit_price: productInfo.unit_price,
+            stock: productInfo.stock,
+            left_in_stock: leftInStock,
+            products: []
+        };
+
+        for (const [key, quantity] of Object.entries(qualityQuantities)) {
+            const quality = parseInt(key);
+            const uid = parseInt("" + productId + quality);
+            order.products.push({
+                uid: uid,
+                product_id: productId,
+                name: productInfo.name,
+                quality: quality,
+                quantity: quantity,
+                time_to_live: productInfo.time_to_live,
+                start_of_lifetime: productInfo.start_of_lifetime,
+                signature: this.createSignature(merchantId, uid, quantity, timeOfBuy)
+            });
         }
-        return result;
-    },
 
-    // prepares a product for buy, ie decreases the amount left in stock for that merchant
-    // and creates a copy of the product that contains only the keys listed as public below (see publicProductBuyAttributes)
-    prepareProductForBuy: function(product, merchant_id) {
-        let cleanProduct = {};
-        for (let key in product) {
-            if (publicProductBuyAttributes.indexOf(key) > -1) {
-                cleanProduct[key] = product[key];
-            }
-        }
-        if (product.stock > 0) {
-            product.merchant_stock[merchant_id] -= product.amount;
-            cleanProduct.left_in_stock = product.merchant_stock[merchant_id];
-        }
-        return cleanProduct;
-    },
-
-    // encrypts a given product by adding an encrypted hash to the product-object that only the marketplace can read
-    AddEncryption : function(merchant_hash, product, timeOfBuy) {
-        var hash = generateProductSignature(merchant_hash, product, timeOfBuy);
-        product["signature"] = encrypt(hash);
-        return product;
-    },
-
-    GetPublicKey : function() {
-        return  public_key.toString('base64');
-    },
-
-    SetProducts : function(new_products) {
-        var products = [];
-        new_products.forEach(function(np) {
-            var new_product = createValidProduct(np);
-            products.push(new_product);
-        });
-        this.products = products;
-    },
-
-    setProduct(uid, newProduct) {
-        for (var i = 0; i < this.products.length; i++) {
-            if (this.products[i].uid == uid) {
-                var product = createValidProduct(newProduct);
-
-                // make sure the new product wont be a duplicate of another existing product (because they happen to have the same UID)
-                var existingProduct = this.GetProductByUID(product["uid"]);
-                if (existingProduct && existingProduct.uid != this.products[i].uid) {
-                    return false;
-                }
-                this.products[i] = product;
-                return true;
-            }
-        }
-        return false;
-    },
-
-    DeleteProduct : function(uid) {
-        for (var i = 0; i < this.products.length; i++) {
-            if (this.products[i].uid === uid) {
-                //this.products.splice(i, 1);
-                this.products[i].deleted = true;
-                return true;
-            }
-        }
-        return false;
-    },
-
-    AddProduct : function(newProduct) {
-        newProduct = createValidProduct(newProduct);
-
-        // make sure this uid does not exist yet
-        var existingProduct = this.GetProductByUID(newProduct["uid"]);
-        if (!existingProduct) {
-            this.products.push(newProduct);
-            return true;
-        } else if (existingProduct.hasOwnProperty('deleted') && existingProduct.deleted == true) {
-            // product existed once: replace it with new information and remove deleted-flag
-            for (var key in existingProduct) {
-                if (newProduct.hasOwnProperty(key)) {
-                    existingProduct[key] = newProduct[key];
-                } else {
-                    delete existingProduct[key]; // will also remove the deleted-flag
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
-    },
-
-    // returns all available products
-    GetExistingProducts : function() {
-        return filterForExistingProducts(this.products);
-    },
-
-    // returns all products, also the once that have been deleted and are no longer sold
-    GetAllProducts : function() {
-        return this.products;
+        return order;
     }
 };
 
-// list all attributes that should be returned on the GET /buy-route
-var publicProductBuyAttributes = ["uid", "product_id", "name", "quality", "price", "stock", "amount", "time_to_live", "start_of_lifetime", "fixed_order_cost"];
+// Picks a random element from an array. Returns undefined for empty lists
+function randomChoice(values) {
+    return values[Math.floor(Math.random() * values.length)];
+}
 
-function filterForExistingProducts(products) {
-    let result = [];
-    for (let i = 0; i < products.length; i++) {
-        if (!products[i].hasOwnProperty('deleted') || products[i].deleted == false) {
-            result.push(products[i]);
+// Picks multiple random elements from an array. Elements can be picked multiple times.
+function randomChoices(values, number_choices) {
+    const choices = [];
+    for (let i = 0; i < number_choices; i++) {
+        choices.push(randomChoice(values));
+    }
+    return choices;
+}
+
+// Counts occurrences of each value
+function countOccurrences(values) {
+    const occurrences = {};
+    for (let i = 0; i < values.length; ++i) {
+        if (occurrences.hasOwnProperty(values[i])) {
+            occurrences[values[i]] += 1;
+        } else {
+            occurrences[values[i]] = 1;
         }
     }
-    return result;
+    return occurrences;
 }
 
-function createValidProduct(np) {
-    let product = {
-        "product_id": np.product_id ? np.product_id : "100",
-        "name": np.name ? np.name : "Unnamed product",
-        "quality": np.quality ? np.quality : 4,
-        "price": np.price ? np.price : 15,
-        "stock": np.stock ? np.stock : -1,
-        "time_to_live": np.time_to_live ? np.time_to_live : -1,
-        "start_of_lifetime": np.start_of_lifetime ? np.start_of_lifetime : -1,
-        "fixed_order_cost": np.fixed_order_cost ? np.fixed_order_cost : 0,
-    };
-    product.uid = parseInt("" + product.product_id + product.quality);
-    return product;
-}
-
-// returns a random int (range including min and max)
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function encrypt(text){
-    text = aesjs.util.convertStringToBytes(addWhitespacePadding(text));
-    var cipher = aesEcb.encrypt(text);
-    return cipher.toString('base64');
-}
-
-function generateProductSignature(merchant_hash, product, timeOfBuy) {
-    var amount = product.amount == undefined ? 1 : product.amount;
-    return product.uid + ' ' + amount  + ' ' + merchant_hash + ' ' + timeOfBuy;
-}
-
+// Adds whitespaces to the string until its length is a multiple of 16
 function addWhitespacePadding(text) {
-    while (text.length % 16 != 0 || !powerOf2(text.length / 16)) text += " ";
-    return text;
-}
-
-function powerOf2 (input) {
-    while (input > 1 && input/2 !== 0 && input%2 === 0) {
-        input /= 2;
-    }
-    return input === 1;
+    return text + ' '.repeat((16 - (text.length % 16)) % 16);
 }
 
 module.exports = Products;
